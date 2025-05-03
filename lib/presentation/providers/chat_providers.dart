@@ -43,19 +43,13 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
     final historyEnabled = settings.historychatenabled;
 
     if (historyEnabled) {
-       if (currentSessionId == null) {
-         debugPrint("No active chat, creating new one.");
-         currentSession = historyService.startNewChat(); // Creates and sets active
-         currentSessionId = currentSession.id;
-       } else {
-         currentSession = historyService.getSessionById(currentSessionId);
-         if (currentSession == null){
-             debugPrint("Active session ID $currentSessionId not found in history. Starting new chat.");
-             currentSession = historyService.startNewChat();
-             currentSessionId = currentSession.id;
-         }
+       currentSession = historyService.getSessionById(currentSessionId!);
+       if (currentSession == null){
+           debugPrint("Active session ID $currentSessionId not found in history. Starting new chat.");
+           currentSession = historyService.startNewChat();
+           currentSessionId = currentSession.id;
        }
-    } else {
+         } else {
       // History is disabled - operate on a temporary in-memory session
       // For simplicity here, we'll just prevent sending if history disabled.
       // A more complex implementation would manage a temporary message list.
@@ -80,7 +74,6 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
           await historyService.addMessageToSession(currentSessionId!, userMessage);
           // Get the updated session after adding the message
           currentSession = historyService.getSessionById(currentSessionId);
-          if (currentSession == null) throw Exception("Session disappeared after adding user message!");
 
       } catch (e,s) {
           debugPrint("Error adding user message to session: $e\n$s");
@@ -91,7 +84,7 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
 
 
     // 4. Generate Title (if enabled, first message, and history enabled)
-    final bool isFirstUserMessage = currentSession.messages.where((m) => m.sender == MessageSender.user).length == 1;
+    final bool isFirstUserMessage = currentSession?.messages.where((m) => m.sender == MessageSender.user).length == 1;
     if (settings.autotitle && isFirstUserMessage && historyEnabled) {
         try {
              debugPrint("Generating title for session $currentSessionId...");
@@ -110,9 +103,9 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
       if (settings.historyformodelsenabled && historyEnabled){
            // Send buffer size from history (or all if buffer is large)
            final buffer = settings.historybufferlength;
-           messagesForApi = (currentSession.messages.length <= buffer || buffer == 0)
+           messagesForApi = ((currentSession!.messages.length <= buffer || buffer == 0)
                               ? currentSession.messages
-                              : currentSession.messages.sublist(currentSession.messages.length - buffer);
+                              : currentSession.messages.sublist(currentSession.messages.length - buffer));
       } else {
           // Send only the last user message if model history is off
           messagesForApi = [userMessage];
@@ -173,7 +166,7 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
         state = AsyncError("AI Error: $e", s);
 
          // Add error message to chat (if history enabled)
-        if (historyEnabled && currentSessionId != null) {
+        if (historyEnabled) {
              final errorMessage = ChatMessage(
                 sender: MessageSender.system,
                 content: "Error: Failed to get response.\n${e.toString()}",

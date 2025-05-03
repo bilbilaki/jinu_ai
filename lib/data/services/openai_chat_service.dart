@@ -3,14 +3,16 @@ import 'dart:convert';
 import 'dart:io'; // Keep for audio/image file handling if needed
 import 'package:dart_openai/dart_openai.dart'; // Make sure this is configured
 import 'package:flutter/material.dart'; // For debugPrint
+import 'package:jinu/presentation/providers/settings_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/chat_message.dart'; // Adjust import path
 
 // NOTE: This service primarily interacts with the OpenAI SDK.
 // It relies on the API key being set globally in main.dart.
 
 class OpenAIChatService {
-  final apiKey = 'aa-b1BFjpcQHWHDgTWnpsfTGm7CwueIsSjrbl8UMD5ezCLaBPHY';
-
+  final container = ProviderContainer();
+  
   // --- Chat Completion ---
   Future<OpenAIChatCompletionModel> generateChatCompletion({
     required String model, // Get from SettingsService
@@ -25,6 +27,17 @@ class OpenAIChatService {
     Map<String, String>? responseFormat, // Add if needed
     List<OpenAIToolModel>? tools, // Add if needed
   }) async {
+    final settingsService = container.read(settingsServiceProvider);
+    final temperature = settingsService.temperature;
+    final defaultModel = settingsService.defaultchatmodel;
+    final maxTokens = settingsService.maxOutputTokens;
+    final topP = settingsService.topP;
+    final topK = settingsService.topK;
+    final usagemode = settingsService.usagemode;
+    final outputstyle = settingsService.customoutputstyle;
+    final tools = settingsService.turnofftools;
+  final apiKey = settingsService.apitokenmain;
+  final baseUrl = settingsService.custoombaseurl;
     if (apiKey.isEmpty || apiKey == "YOUR_OPENAI_API_KEY") {
       debugPrint(
         "Warning: OpenAI API Key not set (or is placeholder). Cannot fetch OpenAI models via SDK.",
@@ -42,7 +55,7 @@ class OpenAIChatService {
 
     try {
       return await OpenAI.instance.chat.create(
-        model: model,
+        model: defaultModel,
         messages: messages,
         temperature: temperature,
         maxTokens: maxTokens,
@@ -50,8 +63,9 @@ class OpenAIChatService {
         // Add other parameters from settings as needed:
         // stop: stop,
         // seed: seed,
-        // responseFormat: responseFormat,
-        // tools: tools,
+         responseFormat: outputstyle,
+         tools: [],
+         toolChoice: "auto",
         n: 1, // Usually want 1 choice for chat
       );
     } on RequestFailedException catch (e) {
@@ -76,6 +90,17 @@ class OpenAIChatService {
 
   // List Models (via SDK)
   Future<List<OpenAIModelModel>> listModels() async {
+    final settingsService = container.read(settingsServiceProvider);
+    final temperature = settingsService.temperature;
+    final defaultModel = settingsService.defaultchatmodel;
+    final maxTokens = settingsService.maxOutputTokens;
+    final topP = settingsService.topP;
+    final topK = settingsService.topK;
+    final usagemode = settingsService.usagemode;
+    final outputstyle = settingsService.customoutputstyle;
+    final tools = settingsService.turnofftools;
+  final apiKey = settingsService.apitokenmain;
+  final baseUrl = settingsService.custoombaseurl;
     if (apiKey.isEmpty || apiKey == "YOUR_OPENAI_API_KEY") {
       debugPrint(
         "Warning: OpenAI API Key not set (or is placeholder). Cannot fetch OpenAI models via SDK.",
@@ -103,6 +128,17 @@ class OpenAIChatService {
     String model = "tts-1",
     String voice = "nova",
   }) async {
+    final settingsService = container.read(settingsServiceProvider);
+    final temperature = settingsService.temperature;
+    final defaultModel = settingsService.defaultchatmodel;
+    final maxTokens = settingsService.maxOutputTokens;
+    final topP = settingsService.topP;
+    final topK = settingsService.topK;
+    final usagemode = settingsService.usagemode;
+    final outputstyle = settingsService.customoutputstyle;
+    final tools = settingsService.turnofftools;
+  final apiKey = settingsService.apitokenmain;
+  final baseUrl = settingsService.custoombaseurl;
 if (apiKey.isEmpty || apiKey == "YOUR_OPENAI_API_KEY") {
       debugPrint(
         "Warning: OpenAI API Key not set (or is placeholder). Cannot fetch OpenAI models via SDK.",
@@ -139,6 +175,14 @@ if (apiKey.isEmpty || apiKey == "YOUR_OPENAI_API_KEY") {
     String filePath, {
     String model = "whisper-1",
   }) async {
+    final settingsService = container.read(settingsServiceProvider);
+    final temperature = settingsService.temperature;
+    final defaultModel = settingsService.defaultchatmodel;
+    final maxTokens = settingsService.maxOutputTokens;
+    final topP = settingsService.topP;
+    final topK = settingsService.topK;
+    final apiKey = settingsService.apitokenmain;
+    final baseUrl = settingsService.custoombaseurl;
    if (apiKey.isEmpty || apiKey == "YOUR_OPENAI_API_KEY") {
       debugPrint(
         "Warning: OpenAI API Key not set (or is placeholder). Cannot fetch OpenAI models via SDK.",
@@ -172,6 +216,14 @@ if (apiKey.isEmpty || apiKey == "YOUR_OPENAI_API_KEY") {
     required String quality, // e.g., standard from settings
     int n = 1,
   }) async {
+    final settingsService = container.read(settingsServiceProvider);
+    final temperature = settingsService.temperature;
+    final defaultModel = settingsService.defaultchatmodel;
+    final maxTokens = settingsService.maxOutputTokens;
+    final topP = settingsService.topP;
+    final topK = settingsService.topK;
+    final apiKey = settingsService.apitokenmain;
+    final baseUrl = settingsService.custoombaseurl;
     if (apiKey.isEmpty || apiKey == "YOUR_OPENAI_API_KEY") {
       debugPrint(
         "Warning: OpenAI API Key not set (or is placeholder). Cannot fetch OpenAI models via SDK.",

@@ -20,7 +20,7 @@ class SettingsService with ChangeNotifier {
   SharedPreferences? _prefs;
   // --- Default Values ---
   double _temperature = 1.0;
-  int _topK = 40;
+  double _topK = 40;
   double _topP = 0.95;
   int _maxOutputTokens = 8192;
   String _systemInstruction = _defaultSystemInstruction;
@@ -53,7 +53,7 @@ class SettingsService with ChangeNotifier {
   String _imagegenerationsize = '1024x1024';
   String _imageanalysismodeldetails = 'gpt-4.1-mini';
   String _credits = '';
-  String _customoutputstyle = 'text';
+  Map<String, String>? _customoutputstyle = {'text': 'text'};
   String _promptsbookmark = '';
   String _customapiname = '';
   String _customapitoken = '';
@@ -67,7 +67,7 @@ class SettingsService with ChangeNotifier {
 
   // --- Getters ---
   double get temperature => _temperature;
-  int get topK => _topK;
+  double get topK => _topK;
   double get topP => _topP;
   int get maxOutputTokens => _maxOutputTokens;
   String get systemInstruction => _systemInstruction;
@@ -98,7 +98,7 @@ class SettingsService with ChangeNotifier {
   String get imagegenerationsize => _imagegenerationsize;
   String get imageanalysismodeldetails => _imageanalysismodeldetails;
   String get credits => _credits;
-  String get customoutputstyle => _customoutputstyle;
+   Map<String, String>? get customoutputstyle => _customoutputstyle;
   String get promptsbookmark => _promptsbookmark;
   String get customapiname => _customapiname;
   String get customapitoken => _customapitoken;
@@ -124,7 +124,7 @@ class SettingsService with ChangeNotifier {
 
     // Load basic generation parameters (previously combined in 'settings')
     _temperature = _prefs!.getDouble(geminiTemperatureKey) ?? _temperature;
-    _topK = _prefs!.getInt(geminiTopKKey) ?? _topK;
+    _topK = _prefs!.getDouble(geminiTopKKey) ?? _topK;
     _topP = _prefs!.getDouble(geminiTopPKey) ?? _topP;
     _maxOutputTokens = _prefs!.getInt(geminiMaxTokensKey) ?? _maxOutputTokens;
     _systemInstruction = _prefs!.getString(geminiSystemInstructionKey) ?? _systemInstruction;
@@ -175,7 +175,7 @@ class SettingsService with ChangeNotifier {
     _imagegenerationsize = _prefs!.getString('imagegenerationsize') ?? '1024x1024';
     _imageanalysismodeldetails = _prefs!.getString('imageanalysismodeldetails') ?? 'gpt-4.1-mini';
     _credits = _prefs!.getString('credits') ?? '';
-    _customoutputstyle = _prefs!.getString('customoutputstyle') ?? 'text';
+    _customoutputstyle = (_prefs!.getString('customoutputstyle') ?? 'text') as Map<String, String>?;
     _promptsbookmark = _prefs!.getString('promptsbookmark') ?? '';
     _customapiname = _prefs!.getString('customapiname') ?? '';
     _customapitoken = _prefs!.getString('customapitoken') ?? '';
@@ -312,7 +312,7 @@ class SettingsService with ChangeNotifier {
           case 'imagegenerationsize': _imagegenerationsize = newValue; break;
           case 'imageanalysismodeldetails': _imageanalysismodeldetails = newValue; break;
           case 'credits': _credits = newValue; break;
-          case 'customoutputstyle': _customoutputstyle = newValue; break;
+          case 'customoutputstyle': _customoutputstyle = newValue as Map<String, String>?; break;
           case 'promptsbookmark': _promptsbookmark = newValue; break;
           case 'customapiname': _customapiname = newValue; break;
           case 'customapitoken': _customapitoken = newValue; break;
@@ -348,7 +348,6 @@ class SettingsService with ChangeNotifier {
   Future<void> _setInt(String key, int newValue, int currentValue) async {
       if (currentValue == newValue) return;
        switch (key) {
-          case geminiTopKKey: _topK = newValue.clamp(1, 1000); break; // Add validation/clamp
           case geminiMaxTokensKey: _maxOutputTokens = newValue.clamp(1, 100000); break;
           case geminiMessageBufferSizeKey: _messageBufferSize = newValue.clamp(0, 50); break;
           case 'historybufferlength': _historybufferlength = newValue.clamp(0, 50); break;
@@ -366,7 +365,6 @@ class SettingsService with ChangeNotifier {
     // Helper to get current int value after potential clamping
     int _getIntValue(String key){
        switch (key) {
-          case geminiTopKKey: return _topK;
           case geminiMaxTokensKey: return _maxOutputTokens;
           case geminiMessageBufferSizeKey: return _messageBufferSize;
           case 'historybufferlength': return _historybufferlength;
@@ -379,6 +377,8 @@ class SettingsService with ChangeNotifier {
   Future<void> _setDouble(String key, double newValue, double currentValue) async {
       if (currentValue == newValue) return;
       switch (key) {
+         case geminiTopKKey: _topK = newValue.clamp(1, 1000); break; // Add validation/clamp
+
          case geminiTemperatureKey: _temperature = newValue.clamp(0.0, 2.0); break;
          case geminiTopPKey: _topP = newValue.clamp(0.0, 1.0); break;
          default: debugPrint("Warning: Unhandled key in _setDouble: $key"); return;
@@ -391,6 +391,7 @@ class SettingsService with ChangeNotifier {
    // Helper to get current double value after clamping
     double _getDoubleValue(String key){
       switch (key) {
+         case geminiTopKKey: return _topK;
          case geminiTemperatureKey: return _temperature;
          case geminiTopPKey: return _topP;
          default: return 0.0; // Should not happen
@@ -423,7 +424,7 @@ class SettingsService with ChangeNotifier {
   Future<void> setImagegenerationsize(String value) => _setString('imagegenerationsize', value, _imagegenerationsize);
   Future<void> setImageanalysismodeldetails(String value) => _setString('imageanalysismodeldetails', value, _imageanalysismodeldetails);
   Future<void> setCredits(String value) => _setString('credits', value, _credits);
-  Future<void> setCustomoutputstyle(String value) => _setString('customoutputstyle', value, _customoutputstyle);
+  Future<void> setCustomoutputstyle(String value) => _setString('customoutputstyle', value, _customoutputstyle as String);
   Future<void> setPromptsbookmark(String value) => _setString('promptsbookmark', value, _promptsbookmark);
   Future<void> setCustomapiname(String value) => _setString('customapiname', value, _customapiname);
   Future<void> setCustomapitoken(String value) => _setString('customapitoken', value, _customapitoken);
@@ -437,7 +438,7 @@ class SettingsService with ChangeNotifier {
 
   // Gemini Params Setters
   Future<void> setTemperature(double value) => _setDouble(geminiTemperatureKey, value, _temperature); // Use Const Key
-  Future<void> setTopK(int value) => _setInt(geminiTopKKey, value, _topK); // Use Const Key
+  Future<void> setTopK(double value) => _setDouble(geminiTopKKey, value, _topK); // Use Const Key
   Future<void> setTopP(double value) => _setDouble(geminiTopPKey, value, _topP);// Use Const Key
   Future<void> setMaxOutputTokens(int value) => _setInt(geminiMaxTokensKey, value, _maxOutputTokens);// Use Const Key
   Future<void> setSystemInstruction(String value) => _setString(geminiSystemInstructionKey, value, _systemInstruction);// Use Const Key
@@ -541,7 +542,7 @@ class SettingsService with ChangeNotifier {
     _imagegenerationsize = '1024x1024';
     _imageanalysismodeldetails = 'gpt-4.1-mini';
     _credits = '';
-    _customoutputstyle = 'text';
+    _customoutputstyle = {'text': 'text'};
     _promptsbookmark = '';
     _customapiname = '';
     _customapitoken = '';

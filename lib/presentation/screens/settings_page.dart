@@ -121,8 +121,8 @@ class SettingsPage extends ConsumerWidget { // Use ConsumerWidget
            _buildIntInputSetting( // Top K
              context, ref: ref,
              label: 'Top K:',
-             value: settings.topK,
-             onChanged: (val) => ref.read(settingsServiceProvider).setTopK(val),
+             value: settings.topK.toInt(),
+             onChanged: (val) => ref.read(settingsServiceProvider).setTopK(val.toDouble()),
              minValue: 1,
            ),
              _buildIntInputSetting( // Max Tokens
@@ -314,7 +314,7 @@ class SettingsPage extends ConsumerWidget { // Use ConsumerWidget
               _buildDropdownSetting<String>(
                 ref: ref,
                 label: 'AI Output Style Preference',
-                value: settings.customoutputstyle,
+                value: settings.customoutputstyle.toString(),
                  items: ['text', 'markdown'],
                  onSelected: (val) => ref.read(settingsServiceProvider).setCustomoutputstyle(val ?? 'text'),
              ),

@@ -119,8 +119,8 @@ class _RightSettingsPanelState extends ConsumerState<RightSettingsPanel> {
                       _buildIntInputSetting( // Top K
                          context, ref: ref,
                          label: 'Top K', // Label only
-                         value: settings.topK,
-                          onChanged: (val) => ref.read(settingsServiceProvider).setTopK(val),
+                         value: settings.topK.toInt(),
+                          onChanged: (val) => ref.read(settingsServiceProvider).setTopK(val.toDouble()),
                          minValue: 1,
                       ),
                        _buildIntInputSetting( // Max Output Tokens

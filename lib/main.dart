@@ -7,8 +7,10 @@ import 'presentation/providers/settings_provider.dart'; // To potentially pre-fe
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  OpenAI.apiKey = 'aa-b1BFjpcQHWHDgTWnpsfTGm7CwueIsSjrbl8UMD5ezCLaBPHY';
-  OpenAI.baseUrl = 'http://127.0.0.1:1234';
+  final container = ProviderContainer();
+  await container.read(settingsServiceProvider).loadSettings();
+  OpenAI.apiKey = container.read(settingsServiceProvider).apitokenmain;
+  OpenAI.baseUrl = container.read(settingsServiceProvider).custoombaseurl;
   OpenAI.showLogs = true;
   OpenAI.showResponsesLogs = true;
 
@@ -22,8 +24,8 @@ void main() async {
       print("Using placeholder key - SDK calls will likely fail.");
       print("******************************************\n\n");
   }
-  OpenAI.apiKey = 'aa-b1BFjpcQHWHDgTWnpsfTGm7CwueIsSjrbl8UMD5ezCLaBPHY';
-  OpenAI.baseUrl = 'http://127.0.0.1:1234';
+   OpenAI.apiKey = container.read(settingsServiceProvider).apitokenmain;
+  OpenAI.baseUrl = container.read(settingsServiceProvider).custoombaseurl;
   OpenAI.showLogs = true;
   OpenAI.showResponsesLogs = true;
 

@@ -5,6 +5,8 @@ import '../../data/services/title_generator_service.dart';
 import 'settings_provider.dart'; // Need settings for title generator API key/model
 
 // Provider for the raw OpenAI Chat Service
+  final container = ProviderContainer();
+
 final openAIChatServiceProvider = Provider<OpenAIChatService>((ref) {
   // This service relies on the global API key set in main.dart
   return OpenAIChatService();

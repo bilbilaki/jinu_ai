@@ -73,6 +73,94 @@ final chatHistoryEnabledProvider = Provider<bool>((ref) {
   final settingsService = ref.watch(settingsServiceProvider);
   return settingsService.historychatenabled;
 });
+final baseUrlProvider = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.custoombaseurl;
+});
+final customapiBaseUrlProvider = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.customapiurl;
+});
 
+final customApiSubTokenProvider = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.apitokensub;
+});
+final defaultChatModel = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.defaultchatmodel;
+});
+final temperature = Provider<double>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.temperature;
+});
+final topP = Provider<double>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.topP;
+});
+final maxOutputTokens = Provider<int>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.maxOutputTokens;
+});
+final systemInstruction = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.systemInstruction;
+});
+final autoTitleEnabled = Provider<bool>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.autotitle;
+});
+final chatHistoryEnabled = Provider<bool>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.historychatenabled;
+}); 
+final themeMode = Provider<ThemeMode>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.themeMode;
+});
+final imageAnalysisModelDetails = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.imageanalysismodeldetails;
+});
+final imagegenerationmodl = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.imagegenerationmodel;
+});
+final imagegenerationmodldetails = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.imagegenerationquality;
+});
+final imagegenerationsize = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.imagegenerationsize;
+});
+final creditbalance = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.credits;
+});
+final setdefaultvoice = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.setdefaultvoice;
+});
+final voiceprocessingmodel = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.voiceprocessingmodel;
+});
+final messagebufferSize = Provider<int>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.messageBufferSize;
+});
+final topK = Provider<double>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.topK;
+});
+final usagemode = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.usagemode;
+});
+final responseFormat = Provider<Map<String, String>?>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.customoutputstyle;
+});
 
 // Add more derived providers as needed for specific settings used frequently
