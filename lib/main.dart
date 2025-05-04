@@ -7,7 +7,7 @@ import 'presentation/providers/settings_provider.dart'; // To potentially pre-fe
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final container = ProviderContainer();
+  late final container = ProviderContainer();
   await container.read(settingsServiceProvider).loadSettings();
   OpenAI.apiKey = container.read(settingsServiceProvider).apitokenmain;
   OpenAI.baseUrl = container.read(settingsServiceProvider).custoombaseurl;

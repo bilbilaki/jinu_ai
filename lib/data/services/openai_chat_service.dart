@@ -59,11 +59,11 @@ class OpenAIChatService {
         messages: messages,
         temperature: temperature,
         maxTokens: maxTokens,
-        topP: topP, // Add TopP
+    //  topP: topP, // Add TopP
         // Add other parameters from settings as needed:
         // stop: stop,
         // seed: seed,
-         responseFormat: outputstyle,
+    //   responseFormat: outputstyle,
          tools: [],
          toolChoice: "auto",
         n: 1, // Usually want 1 choice for chat
@@ -274,9 +274,21 @@ if (apiKey.isEmpty || apiKey == "YOUR_OPENAI_API_KEY") {
   // --- Helper ---
   // Converts our app's ChatMessage to the OpenAI SDK's format.
   // Needs enhancement for multi-modal messages (images).
-  OpenAIChatCompletionChoiceMessageModel convertToOpenAIMessage(
-    ChatMessage message,
-  ) {
+  OpenAIChatCompletionChoiceMessageModel convertToOpenAIMessage(ChatMessage message) {
+    // If the message already has an OpenAI role, use that for conversion
+    if (message.openAIRole != null) {
+      return OpenAIChatCompletionChoiceMessageModel(
+        content: [
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(message.content),
+        ],
+        role: OpenAIChatMessageRole.values.firstWhere(
+          (e) => e.name == message.openAIRole!.name,
+          orElse: () => OpenAIChatMessageRole.user,
+        ),
+      );
+    }
+
+    // Fallback to original sender-based conversion
     OpenAIChatMessageRole role;
     switch (message.sender) {
       case MessageSender.user:
@@ -290,25 +302,6 @@ if (apiKey.isEmpty || apiKey == "YOUR_OPENAI_API_KEY") {
         break;
     }
 
-    // Basic text conversion for now
-    // TOOD: Handle image content if message.contentType == ContentType.image
-    // This would involve creating an OpenAIChatCompletionChoiceMessageContentItemModel.imageUrl()
-    // Requires the image URL to be in message.content for image messages.
-    if (message.contentType == ContentType.image &&
-        message.content.startsWith('http')) {
-      return OpenAIChatCompletionChoiceMessageModel(
-        content: [
-          OpenAIChatCompletionChoiceMessageContentItemModel.imageUrl(
-            message.content,
-          ),
-          // You might need to add a placeholder text part if the model requires it
-          // OpenAIChatCompletionChoiceMessageContentItemModel.text("Image attached."),
-        ],
-        role: role,
-      );
-    }
-
-    // Default to text content
     return OpenAIChatCompletionChoiceMessageModel(
       content: [
         OpenAIChatCompletionChoiceMessageContentItemModel.text(message.content),

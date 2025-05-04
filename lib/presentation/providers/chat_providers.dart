@@ -141,16 +141,16 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
 
        final aiContent = response.choices.first.message.content?.first.text ?? "AI Response was empty.";
 
-       final aiMessage = ChatMessage(
-          sender: MessageSender.ai,
-          content: aiContent,
-          timestamp: DateTime.now(),
-          metadata: { // Optional: Add API response metadata
-              'model': response.choices.first.message,
-              'finish_reason': response.choices.first.finishReason,
-              'usage': response.usage,
-          }
-      );
+       // Use the new fromOpenAI factory method
+       final aiMessage = ChatMessage.fromOpenAI({
+         'role': response.choices.first.message.role.name,
+         'content': aiContent,
+         'metadata': {
+           'model': response.choices.first.message,
+           'finish_reason': response.choices.first.finishReason,
+           'usage': response.usage,
+         }
+       });
 
        // Add AI message to history (if enabled)
        if (historyEnabled) {

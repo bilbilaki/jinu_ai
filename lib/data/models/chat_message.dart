@@ -6,6 +6,7 @@ const _uuid = Uuid();
 
 enum MessageSender { user, ai, system }
 enum ContentType { text, image, audio } // Extend as needed
+enum OpenAIRole { system, user, assistant }
 
 class ChatMessage {
   final String id;
@@ -16,6 +17,7 @@ class ChatMessage {
   final DateTime timestamp;
   final Map<String, dynamic>? metadata; // For errors, API details, etc.
   final bool isUserMessage; // Helper
+  final OpenAIRole? openAIRole;
 
   ChatMessage({
     String? id,
@@ -24,6 +26,7 @@ class ChatMessage {
     this.contentType = ContentType.text,
     DateTime? timestamp,
     this.metadata,
+    this.openAIRole,
   }) : id = id ?? _uuid.v4(),
        timestamp = timestamp ?? DateTime.now(),
        isUserMessage = sender == MessageSender.user;
@@ -37,6 +40,7 @@ class ChatMessage {
     'contentType': contentType.name, // Store enum name as string
     'timestamp': timestamp.toIso8601String(),
     'metadata': metadata,
+    'openAIRole': openAIRole?.name,
     };
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     try {
@@ -55,6 +59,12 @@ class ChatMessage {
         metadata: json['metadata'] != null
             ? Map<String, dynamic>.from(json['metadata'])
             : null,
+        openAIRole: json['openAIRole'] != null
+            ? OpenAIRole.values.firstWhere(
+                (e) => e.name == json['openAIRole'],
+                orElse: () => OpenAIRole.user,
+              )
+            : null,
       );
     } catch (e, s) {
       debugPrint("Error deserializing ChatMessage: $e\nStack: $s");
@@ -72,4 +82,35 @@ class ChatMessage {
 
   // Helper getter for display
   String get text => content;
+
+  // Add helper method to convert from OpenAI message format
+  factory ChatMessage.fromOpenAI(Map<String, dynamic> openAIMessage) {
+    try {
+      final role = OpenAIRole.values.firstWhere(
+        (e) => e.name == openAIMessage['role'],
+        orElse: () => OpenAIRole.user,
+      );
+
+      return ChatMessage(
+        sender: role == OpenAIRole.assistant
+            ? MessageSender.ai
+            : role == OpenAIRole.user
+                ? MessageSender.user
+                : MessageSender.system,
+        content: openAIMessage['content']?.toString() ?? '',
+        openAIRole: role,
+        metadata: {
+          'openai': true,
+          ...?openAIMessage['metadata'],
+        },
+      );
+    } catch (e, s) {
+      debugPrint("Error converting OpenAI message: $e\nStack: $s");
+      return ChatMessage(
+        sender: MessageSender.system,
+        content: "[Error converting OpenAI message]",
+        metadata: {'error': true, 'details': e.toString()},
+      );
+    }
+  }
 }

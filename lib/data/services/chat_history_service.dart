@@ -33,7 +33,7 @@ class ChatHistoryService with ChangeNotifier {
          setActiveChatId(_chatSessions.first.id); // Select the most recent
        } else {
          // Optional: Automatically start a new chat if history is empty on init
-         // startNewChat();
+         startNewChat();
        }
     }
     debugPrint("ChatHistoryService Initialized. Active Chat ID: $_activeChatId");
@@ -59,7 +59,7 @@ class ChatHistoryService with ChangeNotifier {
             "Warning: Chat ID $id data is missing or corrupt. It will be removed from index.",
           );
           // Optionally remove the bad data immediately
-          // await _prefs!.remove('$prefsHistoryPrefix$id');
+           await _prefs!.remove('$prefsHistoryPrefix$id');
         }
       }
       // Cleanup: Remove bad IDs from the index if any were found
@@ -96,7 +96,7 @@ class ChatHistoryService with ChangeNotifier {
         debugPrint("Stack trace: $s");
         debugPrint("Corrupted JSON: $sessionJson");
         // Optionally remove the corrupted entry
-        // await _prefs!.remove('$prefsHistoryPrefix$id');
+         await _prefs!.remove('$prefsHistoryPrefix$id');
         return null;
       }
     }
@@ -134,7 +134,7 @@ class ChatHistoryService with ChangeNotifier {
         // No need to call setActiveChatId again if it's already active
     } else {
         // If saving implicitly makes it active (e.g., new chat), call setActive
-        // setActiveChatId(session.id); // Or handle activation logic elsewhere
+         setActiveChatId(session.id); // Or handle activation logic elsewhere
     }
 
 
@@ -143,9 +143,26 @@ class ChatHistoryService with ChangeNotifier {
 
   // Adds a message to an existing session and saves it
   Future<void> addMessageToSession(String sessionId, ChatMessage message) async {
-    final session = _chatSessions.firstWhere((s) => s.id == sessionId, orElse: () => throw Exception("Session $sessionId not found"));
-    session.messages.add(message);
-    await saveChatSession(session); // Save updates timestamp automatically
+    final session = _chatSessions.firstWhere(
+      (s) => s.id == sessionId,
+      orElse: () => throw Exception("Session $sessionId not found")
+    );
+    
+    // If it's an OpenAI message, ensure the role is preserved
+    if (message.metadata?['openai'] == true) {
+      session.messages.add(message);
+    } else {
+      // For non-OpenAI messages, create a new message preserving the content
+      session.messages.add(ChatMessage(
+        sender: message.sender,
+        content: message.content,
+        contentType: message.contentType,
+        metadata: message.metadata,
+        openAIRole: message.openAIRole,
+      ));
+    }
+    
+    await saveChatSession(session);
   }
 
    // Updates the title of an existing session
