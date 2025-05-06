@@ -8,9 +8,10 @@ import 'settings_provider.dart'; // Need settings for API key check
 final openAIModelsProvider = FutureProvider<List<OpenAIModelModel>>((ref) async {
   // Check if the MAIN API key is set in settings before trying
   // Watch specifically the token provider to avoid unnecessary rebuilds
-  final apiKey = 'aa-b1BFjpcQHWHDgTWnpsfTGm7CwueIsSjrbl8UMD5ezCLaBPHY';
-  OpenAI.apiKey = 'aa-b1BFjpcQHWHDgTWnpsfTGm7CwueIsSjrbl8UMD5ezCLaBPHY';
-  OpenAI.baseUrl = 'http://127.0.0.1:1234';
+  final settingsService = ref.watch(settingsServiceProvider);
+  final apiKey = settingsService.apitokenmain;
+  OpenAI.apiKey = apiKey;
+  OpenAI.baseUrl = settingsService.custoombaseurl;
   OpenAI.showLogs = true;
   OpenAI.showResponsesLogs = true;
 

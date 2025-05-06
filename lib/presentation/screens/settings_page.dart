@@ -311,13 +311,7 @@ class SettingsPage extends ConsumerWidget { // Use ConsumerWidget
                   onSelected: (val) => ref.read(settingsServiceProvider).setAutotitlemodel(val ?? ''), // Allow clearing
                    hintWhenEmpty: "Select a model for titles",
                 ),
-              _buildDropdownSetting<String>(
-                ref: ref,
-                label: 'AI Output Style Preference',
-                value: settings.customoutputstyle.toString(),
-                 items: ['text', 'markdown'],
-                 onSelected: (val) => ref.read(settingsServiceProvider).setCustomoutputstyle(val ?? 'text'),
-             ),
+            
              _buildDropdownSetting<String>(
                 ref: ref,
                 label: 'Location for Custom Search Tool',

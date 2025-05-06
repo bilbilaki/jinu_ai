@@ -4,6 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/services/settings_service.dart'; // Adjust path
 
 // Provider for the SettingsService instance (ChangeNotifier based)
+final container = ProviderContainer();
+late final settingsService = container.read(settingsServiceProvider);
+late final setsettingsService = settingsServiceProvider.overrideWith(
+  (ref) => settingsService,
+);
+
 final settingsServiceProvider = ChangeNotifierProvider<SettingsService>((ref) {
   // The SettingsService constructor calls _init() which loads preferences
   // and potentially fetches initial models if implemented there.
@@ -12,7 +18,6 @@ final settingsServiceProvider = ChangeNotifierProvider<SettingsService>((ref) {
 
 // --- Derived Providers for Specific Settings ---
 // These rebuild only when the specific value changes, potentially more efficient
-
 // Provides the list of model IDs fetched via the custom URL in SettingsService
 final customAvailableModelsProvider = Provider<List<String>>((ref) {
   final settingsService = ref.watch(settingsServiceProvider);
@@ -27,45 +32,44 @@ final themeModeProvider = Provider<ThemeMode>((ref) {
 
 // Provides just the main API token
 final mainApiTokenProvider = Provider<String>((ref) {
-   final settingsService = ref.watch(settingsServiceProvider);
-   return settingsService.apitokenmain;
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.apitokenmain;
 });
 
 // Provides the selected default chat model ID
 final defaultChatModelProvider = Provider<String>((ref) {
-   final settingsService = ref.watch(settingsServiceProvider);
-   return settingsService.defaultchatmodel;
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.defaultchatmodel;
 });
 
 // Provides temperature setting
 final temperatureProvider = Provider<double>((ref) {
-   final settingsService = ref.watch(settingsServiceProvider);
-   return settingsService.temperature;
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.temperature;
 });
 
 // Provides TopP setting
-final topPProvider = Provider<double>((ref){
-    final settingsService = ref.watch(settingsServiceProvider);
-    return settingsService.topP;
+final topPProvider = Provider<double>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.topP;
 });
 
 // Provides Max Output Tokens setting
-final maxOutputTokensProvider = Provider<int>((ref){
-   final settingsService = ref.watch(settingsServiceProvider);
-   return settingsService.maxOutputTokens;
+final maxOutputTokensProvider = Provider<int>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.maxOutputTokens;
 });
 
 // Provides System Instruction setting
-final systemInstructionProvider = Provider<String>((ref){
-    final settingsService = ref.watch(settingsServiceProvider);
-    return settingsService.systemInstruction;
+final systemInstructionProvider = Provider<String>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.systemInstruction;
 });
 
-
 // Provides the auto title enabled flag
-final autoTitleEnabledProvider = Provider<bool>((ref){
-   final settingsService = ref.watch(settingsServiceProvider);
-   return settingsService.autotitle;
+final autoTitleEnabledProvider = Provider<bool>((ref) {
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.autotitle;
 });
 
 // Provides chat history enabled flag
@@ -113,7 +117,7 @@ final autoTitleEnabled = Provider<bool>((ref) {
 final chatHistoryEnabled = Provider<bool>((ref) {
   final settingsService = ref.watch(settingsServiceProvider);
   return settingsService.historychatenabled;
-}); 
+});
 final themeMode = Provider<ThemeMode>((ref) {
   final settingsService = ref.watch(settingsServiceProvider);
   return settingsService.themeMode;
@@ -162,5 +166,14 @@ final responseFormat = Provider<Map<String, String>?>((ref) {
   final settingsService = ref.watch(settingsServiceProvider);
   return settingsService.customoutputstyle;
 });
+Future<void> resetSettings() async {
+  
+  await settingsService.resetToDefaults();
+}
+
+Future<bool> resetSuccess() async {
+  await resetSettings();
+  return true;
+}
 
 // Add more derived providers as needed for specific settings used frequently

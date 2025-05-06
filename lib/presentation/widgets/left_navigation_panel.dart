@@ -82,8 +82,8 @@ class LeftNavigationPanel extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 40), // Full width
                     // Use theme colors or define explicitly
-                    // backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                    // foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
                      alignment: Alignment.centerLeft, // Align icon/text left
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
@@ -101,8 +101,8 @@ class LeftNavigationPanel extends ConsumerWidget {
         if (!showText) // Show icon or divider when collapsed
            const Padding(
               padding: EdgeInsets.symmetric(vertical: 4.0),
-              child: Divider(indent: 16, endIndent: 16), // Use divider when collapsed
-              // child: Center(child: Icon(Icons.history, size: 20, color: Colors.grey[400])),
+              //child: Divider(indent: 16, endIndent: 16), // Use divider when collapsed
+              child: Center(child: Icon(Icons.history, size: 20, color: Color.fromARGB(255, 189, 189, 189))),
            ),
 
 

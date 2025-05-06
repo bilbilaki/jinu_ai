@@ -7,13 +7,14 @@ import 'settings_provider.dart'; // Need settings for title generator API key/mo
 // Provider for the raw OpenAI Chat Service
   final container = ProviderContainer();
   late final settingsService = container.read(settingsServiceProvider);
+  late final setsettingsService = settingsServiceProvider.overrideWith((ref) => settingsService);
   final apiKey = settingsService.apitokenmain;
-  final title_model = settingsService.autotitlemodel;
+  final title_model = settingsService.defaultchatmodel;
 
 
 final openAIChatServiceProvider = Provider<OpenAIChatService>((ref) {
   // This service relies on the global API key set in main.dart
-  return OpenAIChatService();
+  return OpenAIChatService(ref);
 });
 
 // Provider for the Title Generator Service

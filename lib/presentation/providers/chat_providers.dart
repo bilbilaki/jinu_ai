@@ -1,6 +1,7 @@
 // lib/presentation/providers/chat_providers.dart
 import 'package:flutter/material.dart'; // For debugPrint
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:jinu/presentation/providers/memory_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'api_providers.dart';
 import 'history_provider.dart';
@@ -11,12 +12,11 @@ import '../../data/services/openai_chat_service.dart'; // For convertToOpenAIMes
 import '../../data/services/chat_history_service.dart'; // To access methods directly
 import 'package:dart_openai/dart_openai.dart'; // Fpr OpenAIChatCompletionChoiceMessageModel
 
-
 const uuid = Uuid();
 
 // Provider to indicate if the AI is currently processing a message
 final isLoadingProvider = StateProvider<bool>((ref) => false);
-
+final isWebSearchEnabledProvider = StateProvider<bool>((ref) => false);
 
 // --- Main Chat Controller ---
 // Handles sending messages, interacting with services, and managing loading state.
@@ -25,40 +25,53 @@ final isLoadingProvider = StateProvider<bool>((ref) => false);
 class ChatController extends StateNotifier<AsyncValue<void>> {
   final Ref ref;
 
-  ChatController(this.ref) : super(const AsyncData(null)); // Use AsyncValue for loading/error state
+  ChatController(this.ref)
+    : super(const AsyncData(null)); // Use AsyncValue for loading/error state
 
   // --- Core Action: Send Message ---
-  Future<void> sendMessage(String text) async {
+  Future<void> sendMessage(String text, {required bool isWebSearchEnabled}) async {
     state = const AsyncLoading(); // Indicate processing start
 
     final historyService = ref.read(chatHistoryServiceProvider);
     final settings = ref.read(settingsServiceProvider);
     final chatService = ref.read(openAIChatServiceProvider);
     final titleService = ref.read(titleGeneratorServiceProvider);
+    final memoryService = ref.read(longTermMemoryServiceProvider);
 
     // 1. Get Active Chat or Start New One
     String? currentSessionId = historyService.activeChatId;
     ChatSessionItem? currentSession;
 
     final historyEnabled = settings.historychatenabled;
+    final String modelToUse;
+    if (isWebSearchEnabled) {
+      modelToUse =
+          'gpt-4o-mini-search-preview'; // Specific model for web search
+      debugPrint("Web Search Enabled: Using model $modelToUse");
+    } else {
+      modelToUse = settings.defaultchatmodel; // Default model from settings
+      debugPrint("Web Search Disabled: Using model $modelToUse");
+    }
 
     if (historyEnabled) {
-       currentSession = historyService.getSessionById(currentSessionId!);
-       if (currentSession == null){
-           debugPrint("Active session ID $currentSessionId not found in history. Starting new chat.");
-           currentSession = historyService.startNewChat();
-           currentSessionId = currentSession.id;
-       }
-         } else {
+      currentSession = historyService.getSessionById(currentSessionId!);
+      if (currentSession == null) {
+        debugPrint(
+          "Active session ID $currentSessionId not found in history. Starting new chat.",
+        );
+        currentSession = historyService.startNewChat();
+        currentSessionId = currentSession.id;
+      }
+    } else {
       // History is disabled - operate on a temporary in-memory session
       // For simplicity here, we'll just prevent sending if history disabled.
       // A more complex implementation would manage a temporary message list.
       debugPrint("Chat history is disabled. Cannot send message.");
       state = AsyncError("Chat history is disabled", StackTrace.current);
-       ref.read(isLoadingProvider.notifier).state = false; // Ensure loading is off
+      ref.read(isLoadingProvider.notifier).state =
+          false; // Ensure loading is off
       return;
     }
-
 
     // 2. Create User Message
     final userMessage = ChatMessage(
@@ -69,120 +82,190 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
     );
 
     // 3. Update State Immediately (Add user message to History Service)
-      ref.read(isLoadingProvider.notifier).state = true;
-      try {
-          await historyService.addMessageToSession(currentSessionId!, userMessage);
-          // Get the updated session after adding the message
-          currentSession = historyService.getSessionById(currentSessionId);
-
-      } catch (e,s) {
-          debugPrint("Error adding user message to session: $e\n$s");
-          state = AsyncError("Failed to save user message", s);
-           ref.read(isLoadingProvider.notifier).state = false;
-          return;
-      }
-
-
-    // 4. Generate Title (if enabled, first message, and history enabled)
-    final bool isFirstUserMessage = currentSession?.messages.where((m) => m.sender == MessageSender.user).length == 1;
-    if (settings.autotitle && isFirstUserMessage && historyEnabled) {
-        try {
-             debugPrint("Generating title for session $currentSessionId...");
-            final generatedTitle = await titleService.generateTitle(text);
-            await historyService.updateSessionTitle(currentSessionId, generatedTitle);
-             debugPrint("Title generated: $generatedTitle");
-        } catch (e) {
-             debugPrint("Title generation failed: $e");
-             // Continue without blocking chat
-        }
+    ref.read(isLoadingProvider.notifier).state = true;
+    try {
+      await historyService.addMessageToSession(currentSessionId!, userMessage);
+      // Get the updated session after adding the message
+      currentSession = historyService.getSessionById(currentSessionId);
+    } catch (e, s) {
+      debugPrint("Error adding user message to session: $e\n$s");
+      state = AsyncError("Failed to save user message", s);
+      ref.read(isLoadingProvider.notifier).state = false;
+      return;
     }
 
 
-    // 5. Prepare API Call
-     final List<ChatMessage> messagesForApi;
-      if (settings.historyformodelsenabled && historyEnabled){
-           // Send buffer size from history (or all if buffer is large)
-           final buffer = settings.historybufferlength;
-           messagesForApi = ((currentSession!.messages.length <= buffer || buffer == 0)
-                              ? currentSession.messages
-                              : currentSession.messages.sublist(currentSession.messages.length - buffer));
-      } else {
-          // Send only the last user message if model history is off
-          messagesForApi = [userMessage];
-      }
+final bool isFirstUserMessage = currentSession?.messages
+          .where((m) => m.sender == MessageSender.user)
+          .length ==
+      1;
 
-    // Add system prompt if defined
-     final systemPrompt = settings.systemInstruction;
-     List<OpenAIChatCompletionChoiceMessageModel> openAIMessages = [];
-     if (systemPrompt.isNotEmpty) {
-         openAIMessages.add(OpenAIChatCompletionChoiceMessageModel(
-             role: OpenAIChatMessageRole.system,
-             content: [OpenAIChatCompletionChoiceMessageContentItemModel.text(systemPrompt)]
-         ));
-     }
-      openAIMessages.addAll(messagesForApi.map((msg) => chatService.convertToOpenAIMessage(msg)));
-
-
-    // 6. Call API
+  if (settings.autotitle && isFirstUserMessage && historyEnabled) {
     try {
-       final response = await chatService.generateChatCompletion(
-          model: settings.defaultchatmodel, // Use selected model
-          messages: openAIMessages,
-          temperature: settings.temperature,
-          maxTokens: settings.maxOutputTokens > 0 ? settings.maxOutputTokens : null, // Handle 0 case
-          topP: settings.topP,
-          // TODO: Add other parameters like tools, topK if needed from settings
+      debugPrint("Generating title for session $currentSessionId...");
+      final generatedTitle = await titleService.generateTitle(text);
+      await historyService.updateSessionTitle(
+        currentSessionId,
+        generatedTitle,
+      );
+      debugPrint("Title generated and saved: $generatedTitle");
+    } catch (e) {
+      debugPrint("Title generation failed: $e");
+    }
+  }
+
+    // 4. Generate Title (if enabled, first message, and history enabled)
+    // final bool isFirstUserMessage =
+    //     currentSession?.messages
+    //         .where((m) => m.sender == MessageSender.user)
+    //         .length ==
+    //     1;
+    // if (settings.autotitle && isFirstUserMessage && historyEnabled) {
+    //   try {
+    //     debugPrint("Generating title for session $currentSessionId...");
+    //     final generatedTitle = await titleService.generateTitle(text);
+    //     await historyService.updateSessionTitle(
+    //       currentSessionId,
+    //       generatedTitle,
+    //     );
+    //     debugPrint("Title generated: $generatedTitle");
+    //   } catch (e) {
+    //     debugPrint("Title generation failed: $e");
+    //     // Continue without blocking chat
+    //   }
+    // }
+
+    // 5. Prepare API Call
+     // --- Prepare Messages for API ---
+    List<ChatMessage> messagesForApi = [];
+
+    // 1. Add System Prompt (if any)
+    final systemPrompt = settings.systemInstruction;
+    if (systemPrompt.isNotEmpty) {
+      messagesForApi.add(ChatMessage(
+        sender: MessageSender.system,
+        content: systemPrompt,
+        contentType: ContentType.text,
+        openAIRole: OpenAIRole.system, // Use dedicated role if possible
+      ));
+    }
+
+    // 2. Add Long-Term Memory Context (if enabled) - Context Augmentation Approach
+    if (settings.turnofftools == false) { // Using 'usetools' as the toggle for memory
+      try {
+          // Retrieve relevant memories based on the *user's latest message*
+          final memoryResult = memoryService.retrieveMemoryItems(text);
+          if(memoryResult['status'] == 'Success' && memoryResult['data'] != null && (memoryResult['data'] as String).isNotEmpty) {
+              final memoryContext = memoryResult['data'] as String;
+              debugPrint("Injecting LTM context:\n$memoryContext");
+              // Inject as a system message before the user's content
+              messagesForApi.add(ChatMessage(
+                    sender: MessageSender.system,
+                    // Prepend with a clear label for the AI
+                    content: "Relevant information from your long-term memory based on the user's query:\n---\n$memoryContext\n---",
+                    contentType: ContentType.text,
+                    openAIRole: OpenAIRole.system,
+                ));
+          } else if (memoryResult['status'] == 'Error') {
+             debugPrint("LTM retrieval error: ${memoryResult['message']}");
+             // Optionally inform the user or just log it
+          }
+      } catch (e) {
+          debugPrint("Error during LTM retrieval: $e");
+          // Non-fatal, continue without memory context
+      }
+    }
+
+    // 3. Add Chat History (respecting buffer)
+    List<ChatMessage> historyMessages = currentSession!.messages; // Get all messages (incl. user's new one)
+    if (settings.historybufferlength > 0 && historyMessages.length > settings.historybufferlength) {
+        messagesForApi.addAll(historyMessages.sublist(historyMessages.length - settings.historybufferlength));
+    } else if (settings.historybufferlength == 0) {
+        // If buffer is 0, only send the *last user message* which is already constructed
+        // Ensure we don't add history messages if buffer is 0
+        // We already added the user message if history is disabled
+        // Need to ensure the userMessage is included if history is enabled but buffer=0
+         if (!messagesForApi.contains(userMessage)) { // Ensure user message is there
+            messagesForApi.add(userMessage);
+         }
+    }
+    else {
+        messagesForApi.addAll(historyMessages); // Add full history if buffer > length or negative
+    }
+
+    // --- Call API using the Service ---
+    try {
+
+
+      final response = await chatService.generateChatCompletion(
+         // Pass parameters from settings or determined logic
+         model: modelToUse,
+         messages: messagesForApi, // Pass our ChatMessage list
+         temperature: settings.temperature,
+         maxTokens:
+             settings.maxOutputTokens > 0 ? settings.maxOutputTokens : null,
+         topP: settings.topP,
+         // tools: [], // We are doing context augmentation, not tool calling for memory *yet*
+         // toolChoice: null,
       );
 
+      // 7. Process Response and Update State
+      // TODO: Handle potential tool calls from the response if implemented
+      // if (response.choices.first.message.haveToolCalls) { ... }
 
-        // 7. Process Response and Update State
-       // TODO: Handle potential tool calls from the response if implemented
-       // if (response.choices.first.message.haveToolCalls) { ... }
+      final aiContent =
+          response.choices.first.message.content?.first.text ??
+          "AI Response was empty.";
+      final Map<String, dynamic> aiMetadata = {
+        'model_name': response.choices.first.message.toMap()['model'], // Use model from RESPONSE
+        'finish_reason': response.choices.first.finishReason,
+        'usage_prompt_tokens': response.usage?.promptTokens,
+        'usage_completion_tokens': response.usage?.completionTokens,
+        'usage_total_tokens': response.usage?.totalTokens,
+        'response_id': response.id, // Add response ID
+      };
 
-       final aiContent = response.choices.first.message.content?.first.text ?? "AI Response was empty.";
+      aiMetadata.removeWhere((key, value) => key.startsWith('usage_') && value == null);
+      // Use the new fromOpenAI factory method
+      final aiMessage = ChatMessage.fromOpenAI({
+        'role': response.choices.first.message.role.name,
+        'content': aiContent,
+        'metadata': aiMetadata,
+        },
+        );
 
-       // Use the new fromOpenAI factory method
-       final aiMessage = ChatMessage.fromOpenAI({
-         'role': response.choices.first.message.role.name,
-         'content': aiContent,
-         'metadata': {
-           'model': response.choices.first.message,
-           'finish_reason': response.choices.first.finishReason,
-           'usage': response.usage,
-         }
-       });
+      // Add AI message to history (if enabled)
+      if (historyEnabled) {
+        await historyService.addMessageToSession(currentSessionId, aiMessage);
+      } else {
+        // Handle displaying AI message if history is off (e.g., temporary list)
+      }
 
-       // Add AI message to history (if enabled)
-       if (historyEnabled) {
-           await historyService.addMessageToSession(currentSessionId, aiMessage);
-       } else {
-           // Handle displaying AI message if history is off (e.g., temporary list)
-       }
-
-       state = const AsyncData(null); // Signal success
-
+      state = const AsyncData(null); // Signal success
     } catch (e, s) {
-        debugPrint("Error sending message to AI: $e\n$s");
-        state = AsyncError("AI Error: $e", s);
+      debugPrint("Error sending message to AI: $e\n$s");
+      state = AsyncError("AI Error: $e", s);
 
-         // Add error message to chat (if history enabled)
-        if (historyEnabled) {
-             final errorMessage = ChatMessage(
-                sender: MessageSender.system,
-                content: "Error: Failed to get response.\n${e.toString()}",
-                timestamp: DateTime.now(),
-                metadata: {'error': true}
-            );
-           try {
-                 await historyService.addMessageToSession(currentSessionId, errorMessage);
-           } catch (histErr) {
-                debugPrint("Failed to add error message to history: $histErr");
-           }
+      // Add error message to chat (if history enabled)
+      if (historyEnabled) {
+        final errorMessage = ChatMessage(
+          sender: MessageSender.system,
+          content: "Error: Failed to get response.\n${e.toString()}",
+          timestamp: DateTime.now(),
+          metadata: {'error': true},
+        );
+        try {
+          await historyService.addMessageToSession(
+            currentSessionId,
+            errorMessage,
+          );
+        } catch (histErr) {
+          debugPrint("Failed to add error message to history: $histErr");
         }
-
+      }
     } finally {
-        // 8. Clear Loading State
-        ref.read(isLoadingProvider.notifier).state = false;
+      // 8. Clear Loading State
+      ref.read(isLoadingProvider.notifier).state = false;
     }
   }
 
@@ -191,35 +274,35 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
   void createNewChat() {
     final historyEnabled = ref.read(chatHistoryEnabledProvider);
     if (!historyEnabled) {
-       debugPrint("Cannot create new chat: History is disabled.");
-       // Optionally show a message to the user
-       return;
+      debugPrint("Cannot create new chat: History is disabled.");
+      // Optionally show a message to the user
+      return;
     }
-     // startNewChat handles adding to list and setting active ID
-     ref.read(chatHistoryServiceProvider).startNewChat();
+    // startNewChat handles adding to list and setting active ID
+    ref.read(chatHistoryServiceProvider).startNewChat();
   }
 
   void selectChat(String sessionId) {
-     final historyEnabled = ref.read(chatHistoryEnabledProvider);
-      if (!historyEnabled) {
-           debugPrint("Cannot select chat: History is disabled.");
-           return;
-      }
-     // setActiveChatId handles checking existence and notifying
-     ref.read(chatHistoryServiceProvider).setActiveChatId(sessionId);
+    final historyEnabled = ref.read(chatHistoryEnabledProvider);
+    if (!historyEnabled) {
+      debugPrint("Cannot select chat: History is disabled.");
+      return;
+    }
+    // setActiveChatId handles checking existence and notifying
+    ref.read(chatHistoryServiceProvider).setActiveChatId(sessionId);
   }
 
-   void deleteChat(String sessionId){
-        final historyEnabled = ref.read(chatHistoryEnabledProvider);
-         if (!historyEnabled) {
-              debugPrint("Cannot delete chat: History is disabled.");
-              return;
-         }
-        ref.read(chatHistoryServiceProvider).deleteChatSession(sessionId);
-   }
-
+  void deleteChat(String sessionId) {
+    final historyEnabled = ref.read(chatHistoryEnabledProvider);
+    if (!historyEnabled) {
+      debugPrint("Cannot delete chat: History is disabled.");
+      return;
+    }
+    ref.read(chatHistoryServiceProvider).deleteChatSession(sessionId);
+  }
 }
 
-final chatControllerProvider = StateNotifierProvider<ChatController, AsyncValue<void>>((ref) {
-  return ChatController(ref);
-});
+final chatControllerProvider =
+    StateNotifierProvider<ChatController, AsyncValue<void>>((ref) {
+      return ChatController(ref);
+    });

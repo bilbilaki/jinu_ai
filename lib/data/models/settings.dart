@@ -8,7 +8,7 @@ class AppSettings {
   // Add other settings...
 
   AppSettings({
-    this.selectedModel = 'Gemini 1.5 Pro', // Default
+    this.selectedModel = '', // Default
     this.temperature = 1.0,
     this.structuredOutput = false,
     this.codeExecution = false,
