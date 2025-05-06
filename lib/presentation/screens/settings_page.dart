@@ -1,563 +1,736 @@
 // lib/presentation/screens/settings_page.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // For input formatters
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/settings_provider.dart'; // Corrected path
-// Import memory and tool providers if needed for dialogs launched from here
-import '../providers/memory_provider.dart';
-import '../widgets/view_long_term_memory_dialog.dart'; // Corrected path
-// Assuming CustomToolService and its provider exist
-// import '../providers/tool_provider.dart';
-// import '../widgets/add_edit_custom_tool_dialog.dart';
+import 'package:jinu/data/services/settings_service.dart';
+import '../providers/settings_provider.dart';
+import '../widgets/view_long_term_memory_dialog.dart';
+import 'package:jinu/presentation/providers/models_provider.dart';
+// Import other providers/dialogs if needed
 
-class SettingsPage extends ConsumerWidget { // Use ConsumerWidget
+class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
+  // Consistent spacing
+  static const double _sectionSpacing = 24.0;
+  static const double _itemSpacing = 12.0;
+  static const EdgeInsets _listPadding = EdgeInsets.symmetric(
+    horizontal: 16.0,
+    vertical: 8.0,
+  );
+  static const EdgeInsets _tilePadding = EdgeInsets.symmetric(
+    vertical: 4.0,
+  ); // For list tiles
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) { // Add WidgetRef
-    // Use ref.watch to get the service state
-    final settings = ref.watch(settingsServiceProvider);
-    final customModels = ref.watch(customAvailableModelsProvider); // Watch available models
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settingsService = ref.watch(
+      settingsServiceProvider.notifier,
+    ); // Get the Notifier
+    final settings = ref.watch(settingsServiceProvider); // Get the State
+    // Watch derived state for available models
+    final customModels = ref.watch(customAvailableModelsProvider);
+    final data = ref.watch(openAIModelIdsProvider);
+    data.whenData((models) {
+      // Sort models alphabetically
+      models.sort();
+      return models;
+    });
+    // Watch the main API token to check if it's set
 
-    // Get tool service if implemented
-    // final toolService = ref.watch(customToolServiceProvider);
-
+    // Handle initial loading state
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
         actions: [
-           // Reload Models Button
-           IconButton(
-               icon: const Icon(Icons.sync),
-               tooltip: 'Reload Models from Custom URL',
-               onPressed: settings.custoombaseurl.isNotEmpty && settings.apitokenmain.isNotEmpty
-                   ? () async {
-                      ScaffoldMessenger.of(context).showSnackBar( SnackBar(content: Text('Fetching models from ${settings.custoombaseurl}...')),);
+          // Reload Models Button
+          IconButton(
+            icon: const Icon(Icons.sync),
+            tooltip: 'Reload Models from Custom URL',
+            // Use settings state for condition, but call method on service/notifier
+            onPressed:
+                settings.custoombaseurl.isNotEmpty &&
+                        settings.apitokenmain.isNotEmpty
+                    ? () async {
+                      // Show immediate feedback
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Fetching models from ${settings.custoombaseurl}...',
+                          ),
+                        ),
+                      );
                       try {
-                        // Use ref.read() to call methods on the notifier/service
-                        await ref.read(settingsServiceProvider).getModels();
-                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Models reloaded.')),);
+                        // Call method on the notifier
+                        await settingsService.getModels();
+                        ScaffoldMessenger.of(
+                          context,
+                        ).hideCurrentSnackBar(); // Hide loading message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Models reloaded successfully.'),
+                          ),
+                        );
                       } catch (e) {
-                         ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error fetching models: $e'), backgroundColor: Colors.red),);
+                        ScaffoldMessenger.of(
+                          context,
+                        ).hideCurrentSnackBar(); // Hide loading message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error reloading models: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
                       }
-                  }
-                   : null, // Disable if URL or token is missing
-           ),
+                    }
+                    : null, // Disable if URL or token is missing
+          ),
+          // Reset Button
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Reset to Defaults',
-            onPressed: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  title: const Text('Reset Settings?'),
-                  content: const Text(
-                    'This will reset all generation parameters, instructions, API settings, theme, etc., to their defaults. Long-term memory will not be affected.', // Updated text
-                  ),
-                  actions: [
-                    TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel'),),
-                    TextButton(
-                      style: TextButton.styleFrom(foregroundColor: Colors.orange,),
-                      onPressed: () => Navigator.of(ctx).pop(true),
-                      child: const Text('Reset'),
-                    ),
-                  ],
-                ),
-              );
-              if (confirm == true) {
-                // Use ref.read to call methods
-                ref.read(settingsServiceProvider).resetToDefaults();
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Settings reset to defaults.')),);
-              }
-            },
+            onPressed:
+                () => _showResetConfirmationDialog(context, settingsService),
           ),
+          // --- NO EXPLICIT SAVE BUTTON ---
+          // The design uses instant save via the setters in SettingsService.
+          // If you absolutely need one, add an IconButton here and call a hypothetical
+          // settingsService.saveAllPendingChanges() method (which you'd need to implement
+          // by modifying the setters to not save immediately).
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16.0),
+        padding: _listPadding, // Consistent padding
         children: [
           // --- Theme Settings ---
-          Text('Appearance', style: Theme.of(context).textTheme.titleLarge),
-          RadioListTile<ThemeMode>(
-            title: const Text('System Default'),
-            subtitle: const Text('Follow device theme setting'),
-            value: ThemeMode.system,
-            groupValue: settings.themeMode,
-            // Use ref.read for actions
-            onChanged: (value) => ref.read(settingsServiceProvider).setThemeMode(value ?? ThemeMode.system),
+          _buildSectionTitle(context, 'Appearance'),
+          Padding(
+            padding: _tilePadding,
+            child: RadioListTile<ThemeMode>(
+              title: const Text('System Default'),
+              subtitle: const Text('Follow device theme setting'),
+              value: ThemeMode.system,
+              groupValue: settings.themeMode,
+              onChanged:
+                  (value) =>
+                      settingsService.setThemeMode(value ?? ThemeMode.system),
+            ),
           ),
-          RadioListTile<ThemeMode>(
-            title: const Text('Light Theme'),
-            value: ThemeMode.light,
-            groupValue: settings.themeMode,
-            onChanged: (value) => ref.read(settingsServiceProvider).setThemeMode(value ?? ThemeMode.light),
+          Padding(
+            padding: _tilePadding,
+            child: RadioListTile<ThemeMode>(
+              title: const Text('Light Theme'),
+              value: ThemeMode.light,
+              groupValue: settings.themeMode,
+              onChanged:
+                  (value) =>
+                      settingsService.setThemeMode(value ?? ThemeMode.light),
+            ),
           ),
-          RadioListTile<ThemeMode>(
-            title: const Text('Dark Theme'),
-            value: ThemeMode.dark,
-            groupValue: settings.themeMode,
-            onChanged: (value) => ref.read(settingsServiceProvider).setThemeMode(value ?? ThemeMode.dark),
+          Padding(
+            padding: _tilePadding,
+            child: RadioListTile<ThemeMode>(
+              title: const Text('Dark Theme'),
+              value: ThemeMode.dark,
+              groupValue: settings.themeMode,
+              onChanged:
+                  (value) =>
+                      settingsService.setThemeMode(value ?? ThemeMode.dark),
+            ),
           ),
 
-          const Divider(height: 32),
+          const SizedBox(height: _sectionSpacing),
 
           // --- Generation Parameters ---
-          Text('Generation Parameters', style: Theme.of(context).textTheme.titleLarge,),
+          _buildSectionTitle(context, 'Generation Parameters'),
           _buildSliderSetting(
-             context, ref: ref, // Pass ref
+            context,
             label: 'Temperature: ${settings.temperature.toStringAsFixed(2)}',
-            value: settings.temperature, min: 0.0, max: 2.0, divisions: 20,
-            onChanged: (val) => ref.read(settingsServiceProvider).setTemperature(val),
+            value: settings.temperature,
+            min: 0.0,
+            max: 2.0,
+            divisions: 20,
+            onChanged: settingsService.setTemperature,
           ),
-           _buildSliderSetting( // Top P moved to match UI screenshot
-             context, ref: ref,
-             label: 'Top P: ${settings.topP.toStringAsFixed(2)}',
-             value: settings.topP, min: 0.0, max: 1.0, divisions: 20,
-             onChanged: (val) => ref.read(settingsServiceProvider).setTopP(val),
-           ),
-           _buildIntInputSetting( // Top K
-             context, ref: ref,
-             label: 'Top K:',
-             value: settings.topK.toInt(),
-             onChanged: (val) => ref.read(settingsServiceProvider).setTopK(val.toDouble()),
-             minValue: 1,
-           ),
-             _buildIntInputSetting( // Max Tokens
-             context, ref: ref,
-             label: 'Max Output Tokens:',
-             value: settings.maxOutputTokens,
-             onChanged: (val) => ref.read(settingsServiceProvider).setMaxOutputTokens(val),
-             minValue: 1, // Needs a minimum
-             maxValue: 100000, // Example max
-           ),
+          const SizedBox(height: _itemSpacing),
+          _buildSliderSetting(
+            context,
+            label: 'Top P: ${settings.topP.toStringAsFixed(2)}',
+            value: settings.topP,
+            min: 0.0,
+            max: 1.0,
+            divisions: 20,
+            onChanged: settingsService.setTopP,
+          ),
+          const SizedBox(height: _itemSpacing),
+          _buildIntInputSetting(
+            context,
+            label: 'Top K:',
+            value:
+                settings.topK
+                    .toInt(), // Assuming TopK is now Double in state but needs Int input
+            onChanged:
+                (val) => settingsService.setTopK(
+                  val.toDouble(),
+                ), // Convert back to double
+            minValue: 1,
+          ),
+          const SizedBox(height: _itemSpacing),
+          _buildIntInputSetting(
+            context,
+            label: 'Max Output Tokens:',
+            value: settings.maxOutputTokens,
+            onChanged: settingsService.setMaxOutputTokens,
+            minValue: 1,
+            maxValue: 100000,
+          ),
 
-
-          const Divider(height: 32),
+          const SizedBox(height: _sectionSpacing),
 
           // --- System Instruction ---
-          Text('System Instruction', style: Theme.of(context).textTheme.titleLarge),
-           _buildTextFieldSetting( // Use helper for consistency
-              ref: ref,
-              initialValue: settings.systemInstruction,
-              label: 'System Instruction',
-              hint: 'Enter system instruction for the AI...',
-              maxLines: 6,
-              minLines: 3,
-              saveAction: (val) => ref.read(settingsServiceProvider).setSystemInstruction(val),
-            ),
+          _buildSectionTitle(context, 'System Instruction'),
+          _buildTextFieldSetting(
+            initialValue: settings.systemInstruction,
+            // label: 'System Instruction', No label needed if title is above
+            hint: 'Enter system instruction for the AI...',
+            maxLines: 6,
+            minLines: 3,
+            saveAction: settingsService.setSystemInstruction,
+          ),
 
-
-          const Divider(height: 32),
+          const SizedBox(height: _sectionSpacing),
 
           // --- API Configuration ---
-          Text('API Configuration', style: Theme.of(context).textTheme.titleLarge),
-           _buildTextFieldSetting(
-               ref: ref,
-               initialValue: settings.custoombaseurl,
-               label: 'Custom API Base URL',
-               hint: 'e.g., https://api.example.com/v1',
-               saveAction: (val) => ref.read(settingsServiceProvider).setCustoombaseurl(val),
-             ),
-             const SizedBox(height: 16),
-             _buildTextFieldSetting(
-               ref: ref,
-               initialValue: settings.apitokenmain,
-               label: 'Main API Token',
-               saveAction: (val) => ref.read(settingsServiceProvider).setApitokenmain(val),
-               obscureText: true,
-             ),
-             const SizedBox(height: 16),
-             _buildTextFieldSetting(
-               ref: ref,
-               initialValue: settings.apitokensub,
-               label: 'Secondary API Token (Optional)',
-               saveAction: (val) => ref.read(settingsServiceProvider).setApitokensub(val),
-               obscureText: true,
-             ),
+          _buildSectionTitle(context, 'API Configuration'),
+          _buildTextFieldSetting(
+            initialValue: settings.custoombaseurl, // Use corrected name
+            label: 'Custom API Base URL',
+            hint: 'e.g., https://api.openai.com/v1',
+            saveAction:
+                (value) => settingsService.setCustoombaseurl(
+                  value,
+                ), // Use corrected name
+          ),
+          const SizedBox(height: _itemSpacing),
+          _buildTextFieldSetting(
+            initialValue: settings.apitokenmain,
+            label: 'Main API Token',
+            saveAction: (value) => settingsService.setApitokenmain(value),
+            obscureText: true,
+          ),
+          const SizedBox(height: _itemSpacing),
+          _buildTextFieldSetting(
+            initialValue: settings.apitokensub,
+            label: 'Secondary API Token (Optional)',
+            saveAction: (value) => settingsService.setApitokensub(value),
+            obscureText: true,
+          ),
+          const SizedBox(height: _itemSpacing),
+          _buildTextFieldSetting(
+            initialValue: settings.setapisdkbaseurl,
+            label: 'API SDK Base URL (Optional Proxy)',
+            hint: 'e.g., https://your-proxy.com/v1',
+            saveAction: (value) => settingsService.setApisdkbaseurl(value),
+          ),
 
-            // SDK Settings - commented out in original, maybe keep hidden or remove
-            // const SizedBox(height: 16),
-            // _buildTextFieldSetting(ref: ref, initialValue: settings.setapisdkmodel, label: 'API SDK Model (Unused?)', saveAction: (val) => ref.read(settingsServiceProvider).setApisdkmodel(val)),
-             const SizedBox(height: 16),
-             _buildTextFieldSetting(
-                 ref: ref,
-                 initialValue: settings.setapisdkbaseurl,
-                 label: 'API SDK Base URL (OpenAI Proxy?)',
-                 hint: 'e.g., https://your-proxy.com/v1',
-                 saveAction: (val) => ref.read(settingsServiceProvider).setApisdkbaseurl(val)
-             ),
-
-
-          const Divider(height: 32),
+          const SizedBox(height: _sectionSpacing),
 
           // --- Model Configuration ---
-          Text('Model Configuration', style: Theme.of(context).textTheme.titleLarge),
+          _buildSectionTitle(context, 'Model Configuration'),
           _buildDropdownSetting<String>(
-            ref: ref,
             label: 'Default Chat Model',
             value: settings.defaultchatmodel,
-            items: customModels, // Use models fetched from custom URL
-            onSelected: (val) => ref.read(settingsServiceProvider).setDefaultchatmodel(val ?? settings.defaultchatmodel),
+            items: data.asData?.value ?? customModels,
+            // Ensure a valid model is selected, fallback if current selection disappears
+            onSelected: (val) {
+              if (val != null && customModels.contains(val)) {
+                ref.read(settingsServiceProvider).setDefaultchatmodel(val);
+                settingsServiceProvider.overrideWith((ref) => settingsService);
+                // else: Do nothing if no models available
+              }
+            },
+            currentValueProvider: () => settings.defaultchatmodel,
             hintWhenEmpty: "Reload models or check URL/Token",
           ),
-           _buildDropdownSetting<String>(
-             ref: ref,
-             label: 'Text Processing Model',
-             value: settings.textprocessingmodel,
-             items: customModels,
-             onSelected: (val) => ref.read(settingsServiceProvider).setTextprocessingmodel(val ?? settings.textprocessingmodel),
-             hintWhenEmpty: "Reload models or check URL/Token",
-           ),
-           _buildDropdownSetting<String>(
-             ref: ref,
-             label: 'Vision Processing Model',
-             value: settings.visionprocessingmodel,
-             items: customModels, // Assuming vision models are in the same list
-             onSelected: (val) => ref.read(settingsServiceProvider).setVisionprocessingmodel(val ?? settings.visionprocessingmodel),
-             hintWhenEmpty: "Reload models or check URL/Token",
-           ),
-            _buildDropdownSetting<String>( // For Image analysis - assuming same model list
-                  ref: ref,
-                  label: 'Image Analysis Model',
-                  value: settings.imageanalysismodeldetails, // Check key name consistency
-                  items: customModels,
-                  onSelected: (val) => ref.read(settingsServiceProvider).setImageanalysismodeldetails(val ?? settings.imageanalysismodeldetails),
-                  hintWhenEmpty: "Reload models or check URL/Token",
-            ),
+          const SizedBox(height: _itemSpacing),
+          _buildDropdownSetting<String>(
+            label: 'Text Processing Model',
+            value: settings.textprocessingmodel,
+          items: data.asData?.value ?? customModels,
+            // Ensure a valid model is selected, fallback if current selection disappears
+            onSelected: (val) {
+              if (val != null && customModels.contains(val)) {
+                ref.read(settingsServiceProvider).setTextprocessingmodel(val);
+                settingsServiceProvider.overrideWith((ref) => settingsService);
+                // else: Do nothing if no models available
+              }
+            },
+            currentValueProvider: () => settings.textprocessingmodel,
+            hintWhenEmpty: "Reload models or check URL/Token",
+          ),
+          const SizedBox(height: _itemSpacing),
+          _buildDropdownSetting<String>(
+            label: 'Vision Processing Model',
+            value: settings.visionprocessingmodel,
+           items: data.asData?.value ?? customModels,
+            // Ensure a valid model is selected, fallback if current selection disappears
+            onSelected: (val) {
+              if (val != null && customModels.contains(val)) {
+                ref.read(settingsServiceProvider).setVisionprocessingmodel(val);
+                settingsServiceProvider.overrideWith((ref) => settingsService);
+                // else: Do nothing if no models available
+              }
+            },
+            currentValueProvider: () => settings.visionprocessingmodel,
+            hintWhenEmpty: "Reload models or check URL/Token",
+          ),
+          const SizedBox(height: _itemSpacing),
+          _buildDropdownSetting<String>(
+            label: 'Image Analysis Model',
+            value: settings.imageanalysismodeldetails,
+           items: data.asData?.value ?? customModels,
+            // Ensure a valid model is selected, fallback if current selection disappears
+            onSelected: (val) {
+              if (val != null && customModels.contains(val)) {
+                ref.read(settingsServiceProvider).setImageanalysismodeldetails(val);
+                settingsServiceProvider.overrideWith((ref) => settingsService);
+                // else: Do nothing if no models available
+              }
+            },
+            currentValueProvider: () => settings.imageanalysismodeldetails,
+            hintWhenEmpty: "Reload models or check URL/Token",
+          ),
 
-
-          const Divider(height: 32),
-
+          const SizedBox(height: _sectionSpacing),
 
           // --- Voice and Speech ---
-          Text('Voice and Speech', style: Theme.of(context).textTheme.titleLarge),
+          _buildSectionTitle(context, 'Voice and Speech'),
           _buildDropdownSetting<String>(
-              ref: ref,
-              label: 'Voice Generation Model (TTS)',
-              value: settings.voiceprocessingmodel,
-              items: ['tts-1', 'tts-1-hd'], // Example fixed list for TTS models
-              onSelected: (val) => ref.read(settingsServiceProvider).setVoiceprocessingmodel(val ?? 'tts-1'),
-           ),
-           _buildDropdownSetting<String>(
-             ref: ref,
-              label: 'Default Voice',
-              value: settings.setdefaultvoice,
-              items: ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'], // Standard OpenAI voices
-              onSelected: (val) => ref.read(settingsServiceProvider).setDefaultvoice(val ?? 'shimmer'),
-           ),
+            label: 'Voice Generation Model (TTS)',
+            // Ensure value exists in items, provide default otherwise
+            value:
+                ['tts-1', 'tts-1-hd'].contains(settings.voiceprocessingmodel)
+                    ? settings.voiceprocessingmodel
+                    : 'tts-1',
+            items: const ['tts-1', 'tts-1-hd'],
+            onSelected:
+                (val) =>
+                    settingsService.setVoiceprocessingmodel(val ?? 'tts-1'),
+            currentValueProvider: () => settings.voiceprocessingmodel,
+          ),
+          const SizedBox(height: _itemSpacing),
+          _buildDropdownSetting<String>(
+            label: 'Default Voice',
+            value:
+                [
+                      'alloy',
+                      'echo',
+                      'fable',
+                      'onyx',
+                      'nova',
+                      'shimmer',
+                    ].contains(settings.setdefaultvoice)
+                    ? settings.setdefaultvoice
+                    : 'shimmer',
+            items: const ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'],
+            onSelected:
+                (val) => settingsService.setDefaultvoice(val ?? 'shimmer'),
+            currentValueProvider: () => settings.setdefaultvoice,
+          ),
 
-          const Divider(height: 32),
-
+          const SizedBox(height: _sectionSpacing),
 
           // --- Image Generation ---
-          Text('Image Generation', style: Theme.of(context).textTheme.titleLarge),
-           _buildDropdownSetting<String>(
-             ref: ref,
-              label: 'Image Generation Model',
-              value: settings.imagegenerationmodel,
-              items: ['dall-e-3', 'dall-e-2'], // Example DALL-E models
-              onSelected: (val) => ref.read(settingsServiceProvider).setImagegenerationmodel(val ?? 'dall-e-3'),
-           ),
-           _buildDropdownSetting<String>(
-             ref: ref,
-              label: 'Image Quality',
-              value: settings.imagegenerationquality,
-              items: ['standard', 'hd'],
-              onSelected: (val) => ref.read(settingsServiceProvider).setImagegenerationquality(val ?? 'standard'),
-           ),
-           _buildDropdownSetting<String>(
-             ref: ref,
-             label: 'Image Size',
-             value: settings.imagegenerationsize,
-             // Use items specific to the selected model if possible, otherwise show all
-             items: ['1024x1024', '1024x1792', '1792x1024', /* DALL-E 2 sizes:*/ '512x512', '256x256'],
-             onSelected: (val) => ref.read(settingsServiceProvider).setImagegenerationsize(val ?? '1024x1024'),
-           ),
+          _buildSectionTitle(context, 'Image Generation'),
+          _buildDropdownSetting<String>(
+            label: 'Image Generation Model',
+            value:
+                ['dall-e-3', 'dall-e-2'].contains(settings.imagegenerationmodel)
+                    ? settings.imagegenerationmodel
+                    : 'dall-e-3',
+            items: const ['dall-e-3', 'dall-e-2'],
+            onSelected:
+                (val) =>
+                    settingsService.setImagegenerationmodel(val ?? 'dall-e-3'),
+            currentValueProvider: () => settings.imagegenerationmodel,
+          ),
+          const SizedBox(height: _itemSpacing),
+          _buildDropdownSetting<String>(
+            label: 'Image Quality',
+            value:
+                ['standard', 'hd'].contains(settings.imagegenerationquality)
+                    ? settings.imagegenerationquality
+                    : 'standard',
+            items: const ['standard', 'hd'],
+            onSelected:
+                (val) => settingsService.setImagegenerationquality(
+                  val ?? 'standard',
+                ),
+            currentValueProvider: () => settings.imagegenerationquality,
+          ),
+          const SizedBox(height: _itemSpacing),
+          _buildDropdownSetting<String>(
+            label: 'Image Size',
+            // Add logic here if sizes depend on the selected model
+            value:
+                [
+                      '1024x1024',
+                      '1024x1792',
+                      '1792x1024',
+                      '512x512',
+                      '256x256',
+                    ].contains(settings.imagegenerationsize)
+                    ? settings.imagegenerationsize
+                    : '1024x1024',
+            items: const [
+              '1024x1024',
+              '1024x1792',
+              '1792x1024',
+              '512x512',
+              '256x256',
+            ],
+            onSelected:
+                (val) =>
+                    settingsService.setImagegenerationsize(val ?? '1024x1024'),
+            currentValueProvider: () => settings.imagegenerationsize,
+          ),
 
-           const Divider(height: 32),
+          const SizedBox(height: _sectionSpacing),
 
           // --- App Behavior ---
-          Text('App Behavior', style: Theme.of(context).textTheme.titleLarge),
-           _buildDropdownSetting<String>(
-             ref: ref,
-             label: 'Usage Mode',
-             value: settings.usagemode,
-             items: ['normal', 'power', 'minimal'],
-             onSelected: (val) => ref.read(settingsServiceProvider).setUsagemode(val ?? 'normal')
-           ),
-             SwitchListTile(
+          _buildSectionTitle(context, 'App Behavior'),
+          _buildDropdownSetting<String>(
+            label: 'Usage Mode',
+            value:
+                ['normal', 'power', 'minimal'].contains(settings.usagemode)
+                    ? settings.usagemode
+                    : 'normal',
+            items: const ['normal', 'power', 'minimal'],
+            onSelected: (val) => settingsService.setUsagemode(val ?? 'normal'),
+            currentValueProvider: () => settings.usagemode,
+          ),
+          const SizedBox(height: _itemSpacing),
+          Padding(
+            padding: _tilePadding,
+            child: SwitchListTile(
               title: const Text('Enable Model Tools'),
-              subtitle: const Text('Allow model to use function calling, etc.'),
-               // Note: turnofftools is true when tools are OFF. So value is inversed.
-              value: !settings.turnofftools,
-              onChanged: (val) => ref.read(settingsServiceProvider).setTurnofftools(!val), // Invert logic for saving
+              subtitle: const Text('Allow function calling, web search etc.'),
+              value:
+                  !settings
+                      .turnofftools, // UI shows "Enable", so value is inverse of "TurnOff"
+              onChanged:
+                  (val) =>
+                      settingsService.setTurnofftools(!val), // Save the inverse
+              contentPadding:
+                  EdgeInsets.zero, // Use Padding widget externally if needed
             ),
-            SwitchListTile(
-             title: const Text('Auto Generate Chat Titles'),
-             subtitle: const Text('Uses a model to create titles based on the first message'),
-             value: settings.autotitle,
-             onChanged: (val) => ref.read(settingsServiceProvider).setAutotitle(val),
-           ),
-            // Add dropdown for Auto Title Model if `autotitle` is true
-             if(settings.autotitle)
-                _buildDropdownSetting<String>(
-                  ref: ref,
-                  label: 'Auto Title Model',
-                  value: settings.autotitlemodel,
-                  items: customModels.isNotEmpty ? customModels : ['gpt-3.5-turbo-0125', 'gpt-4.1-nano'], // Provide fallbacks
-                  onSelected: (val) => ref.read(settingsServiceProvider).setAutotitlemodel(val ?? ''), // Allow clearing
-                   hintWhenEmpty: "Select a model for titles",
-                ),
-            
-             _buildDropdownSetting<String>(
-                ref: ref,
-                label: 'Location for Custom Search Tool',
-               value: settings.customsearchlocation,
-                items: ['GB', 'US', 'DE', 'FR', 'CA', 'AU', 'IN', 'JP', 'KR', 'BR', 'ZA'], // Example countries
-                onSelected: (val) => ref.read(settingsServiceProvider).setCustomsearchlocation(val ?? 'GB'),
-             ),
+          ),
+          const SizedBox(height: _itemSpacing / 2), // Smaller gap
+          Padding(
+            padding: _tilePadding,
+            child: SwitchListTile(
+              title: const Text('Auto Generate Chat Titles'),
+              subtitle: const Text(
+                'Uses a model for titles based on the first messages',
+              ),
+              value: settings.autotitle,
+              onChanged: settingsService.setAutotitle,
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          if (settings.autotitle) ...[
+            // Updated to match the new naming
+            const SizedBox(height: _itemSpacing),
+            _buildDropdownSetting<String>(
+              label: 'Auto Title Model',
+              value: settings.autotitlemodel,
+              items:
+                  customModels.isNotEmpty
+                      ? customModels
+                      : const [
+                        'gpt-3.5-turbo-0125',
+                        'gpt-4-turbo-preview',
+                      ], // Provide fallbacks
+              onSelected:
+                  (val) => settingsService.setAutotitlemodel(
+                    val ?? '',
+                  ), // Allow clearing
+              currentValueProvider: () => settings.autotitlemodel,
+              hintWhenEmpty: "Select title model or reload models",
+            ),
+          ],
+          //  const SizedBox(height: _itemSpacing),
+          //  // Assuming customOutputStyle is a Map, you probably want a dropdown for simple cases
+          //  _buildDropdownSetting<String>(
+          //     label: 'AI Output Format Preference',
+          //     value: settings.customoutputstyle['text'] ?? 'text', // Get primary style
+          //     items: const ['text', 'markdown'], // Example basic styles
+          //     onSelected: (val) => settingsService.setcus({'text': val ?? 'text'}), // Update map
+          //     currentValueProvider: () => settings.customoutputstyle['text'] ?? 'text',
+          //  ),
+          const SizedBox(height: _itemSpacing),
+          _buildDropdownSetting<String>(
+            label: 'Location for Custom Search Tool',
+            value: settings.customsearchlocation,
+            items: const [
+              'GB',
+              'US',
+              'DE',
+              'FR',
+              'CA',
+              'AU',
+              'IN',
+              'JP',
+              'KR',
+              'BR',
+              'ZA',
+            ], // Example countries
+            onSelected:
+                (val) => settingsService.setCustomsearchlocation(val ?? 'GB'),
+            currentValueProvider: () => settings.customsearchlocation,
+          ),
 
-           const Divider(height: 32),
+          const SizedBox(height: _sectionSpacing),
 
           // --- History Settings ---
-          Text('History Settings', style: Theme.of(context).textTheme.titleLarge),
-            SwitchListTile(
-             title: const Text('Enable Chat History'),
-             subtitle: const Text('Save conversations locally'),
-             value: settings.historychatenabled,
-             onChanged: (val) => ref.read(settingsServiceProvider).setHistorychatenabled(val),
+          _buildSectionTitle(context, 'History Settings'),
+          Padding(
+            padding: _tilePadding,
+            child: SwitchListTile(
+              title: const Text('Enable Chat History'),
+              subtitle: const Text('Save conversations locally'),
+              value: settings.historychatenabled,
+              onChanged: settingsService.setHistorychatenabled,
+              contentPadding: EdgeInsets.zero,
             ),
-           // Only show buffer length if history is enabled
-           if (settings.historychatenabled) ...[
-               SwitchListTile(
+          ),
+          if (settings.historychatenabled) ...[
+            const SizedBox(height: _itemSpacing),
+            Padding(
+              padding: _tilePadding,
+              child: SwitchListTile(
                 title: const Text('Send History Context to Model'),
                 subtitle: const Text('Include previous messages in API calls'),
                 value: settings.historyformodelsenabled,
-                onChanged: (val) => ref.read(settingsServiceProvider).setHistoryformodelsenabled(val),
+                onChanged: settingsService.setHistoryformodelsenabled,
+                contentPadding: EdgeInsets.zero,
               ),
-              // Only show buffer length adjustment if model history is enabled
-              if (settings.historyformodelsenabled)
-                 _buildIntInputSetting(
-                  context, ref: ref,
-                  label: 'Messages Sent to Model (0=All):', // Renamed label
-                  value: settings.historybufferlength, // Check key name consistency
-                  onChanged: (val) => ref.read(settingsServiceProvider).setHistorybufferlength(val), // Check key name
-                  minValue: 0,
-                  maxValue: 50, // Match service limit
-                ),
+            ),
+            if (settings.historyformodelsenabled) ...[
+              const SizedBox(height: _itemSpacing),
+              _buildIntInputSetting(
+                context,
+                label:
+                    'Messages Sent to Model (0=Max):', // Clarify 0 behavior if needed
+                value: settings.historybufferlength,
+                onChanged: (val) => settingsService.setHistorybufferlength(val),
+                minValue: 0,
+                maxValue: 50,
+              ),
             ],
+          ],
 
-           const Divider(height: 32),
+          const SizedBox(height: _sectionSpacing),
 
           // --- Long-Term Memory ---
-          ListTile(
-            leading: const Icon(Icons.memory_outlined),
-            title: Text('Long-Term Memory', style: Theme.of(context).textTheme.titleLarge),
-            subtitle: const Text('View or manually edit saved items'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              // Ensure the dialog is a ConsumerWidget or uses Consumer
-              showDialog(
-                context: context,
-                builder: (_) => const ViewLongTermMemoryDialog(), // Use the correct dialog widget
-              );
-            },
+          Padding(
+            padding: _tilePadding,
+            child: ListTile(
+              leading: const Icon(Icons.memory_outlined),
+              title: const Text('Long-Term Memory'),
+              subtitle: const Text('View or manually edit saved items'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  // Ensure ViewLongTermMemoryDialog is a ConsumerWidget or uses Consumer
+                  builder: (_) => const ViewLongTermMemoryDialog(),
+                );
+              },
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+            ),
           ),
 
-           const Divider(height: 32),
+          const SizedBox(height: _sectionSpacing),
 
-          // --- Custom API Configuration (Optional Section) ---
-          ExpansionTile( // Make this section collapsible
-            title: Text('Custom Function Tool API (Advanced)', style: Theme.of(context).textTheme.titleMedium),
-             initiallyExpanded: settings.customapiname.isNotEmpty, // Expand if already configured
-             childrenPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-             children: [
-               _buildTextFieldSetting(
-                     ref: ref,
-                    initialValue: settings.customapiname,
-                     label: 'Tool API Name',
-                     hint: 'e.g., weather_api',
-                     saveAction: (val) => ref.read(settingsServiceProvider).setCustomapiname(val)
-                ),
-                 const SizedBox(height: 16),
-                 _buildTextFieldSetting(
-                     ref: ref,
-                     initialValue: settings.customapiurl,
-                     label: 'Tool API URL',
-                     hint: 'https://api.weather.com/current',
-                     saveAction: (val) => ref.read(settingsServiceProvider).setCustomapiurl(val)
-                 ),
-                 const SizedBox(height: 16),
-                  _buildDropdownSetting<String>( // API Type dropdown
-                     ref: ref,
-                    label: 'Tool API Request Type',
-                     value: settings.customapitype,
-                     items: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-                     onSelected: (val) => ref.read(settingsServiceProvider).setCustomapitype(val ?? 'GET'),
-                 ),
-                 const SizedBox(height: 16),
-                 _buildTextFieldSetting( // API Headers
-                     ref: ref,
-                     initialValue: settings.customapiheaders,
-                    label: 'Tool API Headers (JSON)',
-                     hint: '{"Content-Type": "application/json", "X-Api-Key":"..."}',
-                    maxLines: 4, minLines: 2,
-                    saveAction: (val) => ref.read(settingsServiceProvider).setCustomapiheaders(val)
-                 ),
-                 const SizedBox(height: 16),
-                  _buildTextFieldSetting( // API Params (JSON - potentially for GET query or POST body structure)
-                    ref: ref,
-                     initialValue: settings.customapiparam,
-                     label: 'Tool API Parameters (JSON)',
-                     hint: '{"location": "%query%", "units": "metric"}',
-                     maxLines: 4, minLines: 2,
-                     saveAction: (val) => ref.read(settingsServiceProvider).setCustomapiparam(val)
-                 ),
-                // Note: customapiparamvalue seems redundant if params are defined above. Remove?
-                // Or is it for a single dynamic value replacement? Clarify purpose.
-                 // _buildTextFieldSetting(ref: ref, initialValue: settings.customapiparamvalue, label: 'Custom API Param Value', saveAction: (val) => ref.read(settingsServiceProvider).setCustomapiparamvalue(val)),
-
-                 // Authentication fields (Optional, maybe hide individually if not needed)
-                const SizedBox(height: 16),
-                 _buildTextFieldSetting(
-                       ref: ref,
-                       initialValue: settings.customapitoken,
-                       label: 'Tool API Bearer Token (Optional)',
-                      saveAction: (val) => ref.read(settingsServiceProvider).setCustomapitoken(val),
-                       obscureText: true
-                 ),
-                 const SizedBox(height: 8),
-                 _buildTextFieldSetting(
-                      ref: ref,
-                      initialValue: settings.customapikey,
-                      label: 'Tool API Key (Header/Query - Optional)', // Specify where key is used in headers/params
-                      saveAction: (val) => ref.read(settingsServiceProvider).setCustomapikey(val),
-                      obscureText: true
-                 ),
-
-             ],
+          // --- Custom Function Tool API (Advanced) ---
+          // Use ExpansionTileTheme for cleaner look if desired
+          ExpansionTile(
+            title: Text(
+              'Custom Function Tool API (Advanced)',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            tilePadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+            childrenPadding: const EdgeInsets.symmetric(
+              horizontal: 8.0,
+              vertical: 8.0,
+            ), // Pad children
+            initiallyExpanded:
+                settings.customapiname.isNotEmpty, // Expand if configured
+            children: [
+              _buildTextFieldSetting(
+                initialValue: settings.customapiname,
+                label: 'Tool API Name',
+                hint: 'e.g., weather_api or stock_quote',
+                saveAction:
+                    (values) => settingsService.setCustomapiname(values),
+              ),
+              const SizedBox(height: _itemSpacing),
+              _buildTextFieldSetting(
+                initialValue: settings.customapiurl,
+                label: 'Tool API URL',
+                hint: 'https://api.example.com/data?query=%query%',
+                keyboardType: TextInputType.url,
+                saveAction: (val) => settingsService.setCustomapiurl(val),
+              ),
+              const SizedBox(height: _itemSpacing),
+              _buildDropdownSetting<String>(
+                label: 'Tool API Request Type',
+                value: settings.customapitype,
+                items: const ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+                onSelected:
+                    (val) => settingsService.setCustomapitype(val ?? 'GET'),
+                currentValueProvider: () => settings.customapitype,
+              ),
+              const SizedBox(height: _itemSpacing),
+              _buildTextFieldSetting(
+                initialValue: settings.customapiheaders,
+                label: 'Tool API Headers (JSON)',
+                hint: '{"Content-Type": "application/json", "X-Api-Key":"..."}',
+                maxLines: 4,
+                minLines: 2,
+                keyboardType: TextInputType.multiline,
+                saveAction: (val) => settingsService.setCustomapiheaders(val),
+              ),
+              const SizedBox(height: _itemSpacing),
+              _buildTextFieldSetting(
+                initialValue: settings.customapiparam,
+                label: 'Tool API Parameters Template (JSON)',
+                hint: '{\n  "location": "%query%",\n  "units": "metric"\n}',
+                maxLines: 4,
+                minLines: 2,
+                keyboardType: TextInputType.multiline,
+                saveAction: (val) => settingsService.setCustomapiparam(val),
+              ),
+              const SizedBox(height: _itemSpacing),
+              _buildTextFieldSetting(
+                // Keep if needed, maybe rename 'API Auth Token'
+                initialValue: settings.customapitoken,
+                label: 'Tool API Bearer Token (Optional)',
+                saveAction: (val) => settingsService.setCustomapitoken(val),
+                obscureText: true,
+              ),
+              const SizedBox(height: _itemSpacing),
+              _buildTextFieldSetting(
+                // Keep if needed, maybe rename 'API Auth Key'
+                initialValue: settings.customapikey,
+                label: 'Tool API Key (Header/Query - Optional)',
+                saveAction: (val) => settingsService.setCustomapikey(val),
+                obscureText: true,
+              ),
+            ],
           ),
 
-          const Divider(height: 32),
+          const SizedBox(height: _sectionSpacing),
 
           // --- Developer Options ---
-          Text('Developer Options', style: Theme.of(context).textTheme.titleLarge),
-          SwitchListTile(
-            title: const Text('Developer Mode'),
-            subtitle: const Text('Enable extra logging or features'),
-            value: settings.devmod,
-            onChanged: (val) => ref.read(settingsServiceProvider).setDevmod(val),
+          _buildSectionTitle(context, 'Developer Options'),
+          Padding(
+            padding: _tilePadding,
+            child: SwitchListTile(
+              title: const Text('Developer Mode'),
+              subtitle: const Text('Enable extra logging or features'),
+              value: settings.devmod,
+              onChanged: (settingsService.setDevmod),
+              contentPadding: EdgeInsets.zero,
+            ),
           ),
-          // Add other dev options here if needed
 
-          const SizedBox(height: 32), // Bottom padding
+          const SizedBox(height: _sectionSpacing * 2), // Extra bottom padding
         ],
       ),
     );
   }
 
+  // --- Helper Methods ---
 
- // --- Helper Methods ---
-
- Widget _buildSliderSetting(
-      BuildContext context, {
-        required WidgetRef ref, // Pass ref
-        required String label,
-        required double value,
-        required double min,
-        required double max,
-        required int divisions,
-        required ValueChanged<double> onChanged,
-      }) {
+  // Helper for Section Titles
+  Widget _buildSectionTitle(BuildContext context, String title) {
     return Padding(
-       padding: const EdgeInsets.symmetric(vertical: 8.0),
-       child: Row(
-          children: [
-            Expanded(flex: 3, child: Text(label, style: Theme.of(context).textTheme.bodyLarge)), // Adjust flex
-            Expanded(
-              flex: 5, // Adjust flex
-              child: Slider(
-                value: value,
-                min: min,
-                max: max,
-                divisions: divisions,
-                label: value.toStringAsFixed(2),
-                onChanged: onChanged, // Direct call
-              ),
-            ),
-          ],
-       ),
+      padding: const EdgeInsets.only(
+        top: 16.0,
+        bottom: 8.0,
+      ), // Add spacing around title
+      child: Text(title, style: Theme.of(context).textTheme.titleLarge),
     );
   }
 
-  Widget _buildIntInputSetting(
-      BuildContext context, {
-        required WidgetRef ref, // Pass ref
-        required String label,
-        required int value,
-        required ValueChanged<int> onChanged,
-        int minValue = 0,
-        int? maxValue,
-      }) {
-    // Use stateful builder or separate stateful widget to manage controller lifecycle
-    return StatefulBuilder(
-        builder: (context, setState) {
-         // Create controller inside builder if not using separate widget
-         // This is less ideal for performance but simple for this example.
-         // A dedicated StatefulWidget is better.
-         final controller = TextEditingController(text: value.toString());
-         controller.selection = TextSelection.fromPosition(TextPosition(offset: controller.text.length));
-
-         return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Row(
-               children: [
-                 Expanded(child: Text(label, style: Theme.of(context).textTheme.bodyLarge)),
-                 SizedBox(
-                    width: 80,
-                    child: TextFormField(
-                    controller: controller,
-                    textAlign: TextAlign.right,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(isDense: true),
-                    onFieldSubmitted: (newValue) {
-                       final intVal = int.tryParse(newValue);
-                       if (intVal != null) {
-                         int finalVal = intVal;
-                         if (finalVal < minValue) finalVal = minValue;
-                         if (maxValue != null && finalVal > maxValue) finalVal = maxValue;
-                         onChanged(finalVal); // Call the provider update
-                         // Update text field only if value was clamped/changed
-                         if (finalVal.toString() != controller.text) {
-                           controller.text = finalVal.toString();
-                           controller.selection = TextSelection.fromPosition(TextPosition(offset: controller.text.length));
-                         }
-                       } else {
-                         // Reset field to original value if parse fails
-                           controller.text = value.toString();
-                           controller.selection = TextSelection.fromPosition(TextPosition(offset: controller.text.length));
-                       }
-                    },
-                     // Optional: Update on focus lost as well
-                    // onEditingComplete: () { ... similar logic ... },
-                 ),
-                ),
-               ],
-            ),
-         );
-        }
-    );
-  }
-
- // Helper for TextFields to reduce repetition
-  Widget _buildTextFieldSetting({
-    required WidgetRef ref,
-    required String initialValue,
+  // Updated Slider Helper
+  Widget _buildSliderSetting(
+    BuildContext context, {
     required String label,
+    required double value,
+    required double min,
+    required double max,
+    required int divisions,
+    required ValueChanged<double> onChanged,
+  }) {
+    return Column(
+      // Use Column for better label placement
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+        ),
+        Slider(
+          value: value,
+          min: min,
+          max: max,
+          divisions: divisions,
+          label: value.toStringAsFixed(2), // Keep label on slider
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+
+  // Updated Int Input Helper (Uses FocusNode for saving on focus loss)
+  Widget _buildIntInputSetting(
+    BuildContext context, {
+    required String label,
+    required int value,
+    required ValueChanged<int> onChanged,
+    int minValue = 0,
+    int? maxValue,
+  }) {
+    return _SettingTextField<int>(
+      label: label,
+      initialValue: value,
+      onSave: onChanged,
+      keyboardType: TextInputType.number,
+      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+      parser: (text) => int.tryParse(text),
+      validator: (val) {
+        if (val == null) return value; // Revert if parse fails
+        int finalVal = val;
+        if (finalVal < minValue) finalVal = minValue;
+        if (maxValue != null && finalVal > maxValue) finalVal = maxValue;
+        return finalVal;
+      },
+      textAlign: TextAlign.right,
+      width: 80,
+    );
+  }
+
+  // Updated Text Field Helper (Uses FocusNode for saving on focus loss)
+  Widget _buildTextFieldSetting({
+    required String initialValue,
+    String? label, // Label can be optional if using _buildSectionTitle
     String? hint,
     required Function(String) saveAction,
     bool obscureText = false,
@@ -565,70 +738,289 @@ class SettingsPage extends ConsumerWidget { // Use ConsumerWidget
     int minLines = 1,
     TextInputType keyboardType = TextInputType.text,
   }) {
-     // Use StatefulBuilder for local controller management
-     return StatefulBuilder(
-        builder: (context, setState) {
-           final controller = TextEditingController(text: initialValue);
-           // Move cursor to end initially
-           controller.selection = TextSelection.fromPosition(TextPosition(offset: controller.text.length));
-
-           return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: TextFormField( // Use TextFormField for potential validation later
-                 controller: controller,
-                  decoration: InputDecoration(
-                    labelText: label,
-                    hintText: hint,
-                    border: const OutlineInputBorder(),
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12), // Adjust padding
-                 ),
-                  obscureText: obscureText,
-                  maxLines: maxLines,
-                  minLines: minLines,
-                  keyboardType: keyboardType,
-                  // Save on focus loss or explicit action needed?
-                  // Using onFieldSubmitted for simplicity here.
-                  onFieldSubmitted: (value) => saveAction(value.trim()),
-                  // Could also use onEditingComplete or a debounce on onChanged
-                 onChanged: (value) {
-                     // Optional: Live update (use debounce for performance)
-                     // saveAction(value.trim());
-                 },
-              ),
-           );
-        }
+    return _SettingTextField<String>(
+      initialValue: initialValue,
+      label: label,
+      hint: hint,
+      onSave: saveAction,
+      obscureText: obscureText,
+      maxLines: maxLines,
+      minLines: minLines,
+      keyboardType: keyboardType,
+      parser: (text) => text.trim(), // Trim whitespace on save
+      validator:
+          (val) =>
+              val ??
+              initialValue, // Revert if parse fails (shouldn't for string)
     );
   }
 
-  // Helper for Dropdown Menus
- Widget _buildDropdownSetting<T>({
-   required WidgetRef ref,
-   required String label,
-   required T value,
-   required List<T> items,
-   required ValueChanged<T?> onSelected,
-   String? hintWhenEmpty, // Optional hint when items list is empty
- }) {
-   bool isEmpty = items.isEmpty;
+  // Updated Dropdown Helper
+  Widget _buildDropdownSetting<T>({
+    required String label,
+    required T value,
+    required List<T> items,
+    required ValueChanged<T?> onSelected,
+    String? hintWhenEmpty,
+    // Optional: Add a way to get the current value for robust checking
+    required T Function() currentValueProvider,
+  }) {
+    bool isEmpty = items.isEmpty;
+    // Ensure the currently selected value is actually in the list,
+    // otherwise, fallback or show hint more clearly.
+    T? selection = isEmpty ? null : (items.contains(value) ? value : null);
 
-   return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: DropdownMenu<T>(
-         label: Text(label),
-         // width: MediaQuery.of(context).size.width - 32, // Full width minus padding
-         // Use requestFocusOnTap for better accessibility if needed
-         initialSelection: isEmpty ? null : value, // Don't set initial if empty
-         enabled: !isEmpty, // Disable if list is empty
-         hintText: isEmpty ? hintWhenEmpty : null, // Show hint if empty
-         dropdownMenuEntries: items.map((item) => DropdownMenuEntry<T>(
-             value: item,
-             // Assume item.toString() is a reasonable label
-             label: item.toString(),
-         )).toList(),
-         onSelected: onSelected, // Direct call to provider update
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: 4.0,
+      ), // Consistent vertical padding
+      child: DropdownButtonFormField<T>(
+        value: selection,
+        isExpanded: true, // Make dropdown take available width
+        decoration: InputDecoration(
+          labelText: label,
+          // hintText: isEmpty ? hintWhenEmpty : (selection == null ? "Select..." : null), // Show hint if empty OR current value not in list
+          hintText:
+              isEmpty
+                  ? hintWhenEmpty
+                  : (selection == null
+                      ? (items.isNotEmpty
+                          ? 'Select a valid model'
+                          : 'No models available')
+                      : null),
+          border: const OutlineInputBorder(),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 12,
+          ),
+          isDense: true,
+          enabled: !isEmpty, // Disable interaction if empty
+        ),
+        items:
+            isEmpty
+                ? [] // No items if the list is empty
+                : items
+                    .map(
+                      (item) => DropdownMenuItem<T>(
+                        value: item,
+                        child: Text(
+                          item.toString().split('.').last,
+                        ), // Attempt to shorten long model names if needed
+                      ),
+                    )
+                    .toList(),
+        onChanged:
+            isEmpty
+                ? null
+                : (T? newValue) {
+                  // Only call onSelected if the value actually changes
+                  if (newValue != null && newValue != currentValueProvider()) {
+                    onSelected(newValue);
+                  }
+                },
       ),
-   );
- }
+    );
+  }
 
+  // Helper method for reset confirmation
+  void _showResetConfirmationDialog(
+    BuildContext context,
+    SettingsService service,
+  ) {
+    showDialog<bool>(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Reset Settings?'),
+            content: const Text(
+              'This will reset all settings to their default values. Reloading the app may be required for all changes to take effect.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(foregroundColor: Colors.orange),
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: const Text('Reset'),
+              ),
+            ],
+          ),
+    ).then((confirmed) {
+      if (confirmed == true) {
+        service.resetToDefaults();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Settings reset to defaults.')),
+        );
+      }
+    });
+  }
+}
+
+// --- Reusable Stateful Helper Widget for Text Fields ---
+// This manages controller and focus node lifecycle and saves on focus loss
+class _SettingTextField<T> extends StatefulWidget {
+  final T initialValue;
+  final String? label;
+  final String? hint;
+  final Function(T) onSave;
+  final bool obscureText;
+  final int maxLines;
+  final int minLines;
+  final TextInputType keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
+  final T? Function(String) parser; // Function to parse text to type T
+  final T Function(T?) validator; // Function to validate/clamp parsed value
+  final TextAlign textAlign;
+  final double? width; // Optional fixed width
+
+  const _SettingTextField({
+    super.key,
+    required this.initialValue,
+    this.label,
+    this.hint,
+    required this.onSave,
+    this.obscureText = false,
+    this.maxLines = 1,
+    this.minLines = 1,
+    this.keyboardType = TextInputType.text,
+    this.inputFormatters,
+    required this.parser,
+    required this.validator,
+    this.textAlign = TextAlign.start,
+    this.width,
+  });
+
+  @override
+  State<_SettingTextField<T>> createState() => _SettingTextFieldState<T>();
+}
+
+class _SettingTextFieldState<T> extends State<_SettingTextField<T>> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
+  late T _currentValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentValue = widget.initialValue;
+    _controller = TextEditingController(text: widget.initialValue.toString());
+    _focusNode = FocusNode();
+    _focusNode.addListener(_handleFocusChange);
+  }
+
+  void _handleFocusChange() {
+    if (!_focusNode.hasFocus) {
+      _saveValue();
+    }
+  }
+
+  void _saveValue() {
+    final parsed = widget.parser(_controller.text);
+    final validatedValue = widget.validator(parsed);
+
+    // Only trigger save if the value has actually changed
+    if (validatedValue != _currentValue) {
+      widget.onSave(validatedValue);
+      _currentValue = validatedValue; // Update internal state tracking
+      // Update controller text only if validation changed it (e.g., clamping)
+      if (_controller.text != validatedValue.toString()) {
+        final newText = validatedValue.toString();
+        _controller.text = newText;
+        // Optionally move cursor to end after programmatic change
+        _controller.selection = TextSelection.fromPosition(
+          TextPosition(offset: newText.length),
+        );
+      }
+    } else {
+      // If validation didn't change the value, but parsing failed or resulted
+      // in the same value, ensure the text field reflects the known good state.
+      // This handles cases where the user types invalid chars then clicks away.
+      if (_controller.text != _currentValue.toString()) {
+        _controller.text = _currentValue.toString();
+        _controller.selection = TextSelection.fromPosition(
+          TextPosition(offset: _controller.text.length),
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant _SettingTextField<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the initialValue coming from the provider changes externally
+    // (e.g., due to reset), update the text field.
+    if (widget.initialValue != oldWidget.initialValue &&
+        widget.initialValue != _currentValue) {
+      _currentValue = widget.initialValue;
+      _controller.text = widget.initialValue.toString();
+      // Move cursor to end if needed
+      _controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: _controller.text.length),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget textField = TextFormField(
+      controller: _controller,
+      focusNode: _focusNode,
+      decoration: InputDecoration(
+        labelText: widget.label,
+        hintText: widget.hint,
+        border: const OutlineInputBorder(),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 12,
+        ),
+      ),
+      obscureText: widget.obscureText,
+      maxLines: widget.maxLines,
+      minLines: widget.minLines,
+      keyboardType: widget.keyboardType,
+      inputFormatters: widget.inputFormatters,
+      textAlign: widget.textAlign,
+      // Save on submission (e.g., pressing Enter on keyboard)
+      onFieldSubmitted: (_) => _saveValue(),
+    );
+
+    // Wrap with SizedBox if width is specified
+    if (widget.width != null) {
+      textField = SizedBox(width: widget.width, child: textField);
+    }
+
+    // If label is provided standalone (not part of InputDecoration)
+    if (widget.label != null && widget.width != null) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                widget.label!,
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+            ),
+            textField, // SizedBox is now inside the 'textField' variable
+          ],
+        ),
+      );
+    } else {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: textField, // Regular text field, label is inside InputDecoration
+      );
+    }
+  }
 }

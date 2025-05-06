@@ -259,11 +259,11 @@ class _RightSettingsPanelState extends ConsumerState<RightSettingsPanel> {
                       onPressed: () {
                         /* TODO: Implement Safety Settings */
                       },
-                      child: const Text('Edit'),
                       style: TextButton.styleFrom(
                         minimumSize: Size(40, 30),
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
+                      child: const Text('Edit'),
                     ),
                   ],
                 ),
@@ -509,8 +509,9 @@ class _RightSettingsPanelState extends ConsumerState<RightSettingsPanel> {
                     final intVal = int.tryParse(controller.text);
                     if (intVal != null) {
                       int finalVal = intVal.clamp(minValue, maxValue ?? 999999);
-                      if (finalVal != value)
+                      if (finalVal != value) {
                         onChanged(finalVal); // Only call if changed
+                      }
                       if (finalVal.toString() != controller.text) {
                         controller.text = finalVal.toString();
                         controller.selection = TextSelection.fromPosition(

@@ -165,8 +165,9 @@ class _DynamicInputFieldState extends ConsumerState<DynamicInputField> { // Chan
            // Determine content type based on MIME if needed
            final mime = pickedFile != null ? fileService.getMimeType(pickedFile.path) : null;
            if(mime != null) {
-                if(mime.startsWith('image/')) contentType = ContentType.image;
-                else if(mime.startsWith('audio/')) contentType = ContentType.audio;
+                if(mime.startsWith('image/')) {
+                  contentType = ContentType.image;
+                } else if(mime.startsWith('audio/')) contentType = ContentType.audio;
                 else contentType = ContentType.file; // Keep generic for others
            }
            break;
@@ -414,13 +415,14 @@ class _DynamicInputFieldState extends ConsumerState<DynamicInputField> { // Chan
             ),
           ),
            // Optional: Cancel Button during recording?
-          // IconButton(
-          //   icon: Icon(Icons.cancel_outlined, color: Colors.grey[500], size: 20),
-          //   onPressed: _cancelRecording,
-          //   tooltip: 'Cancel Recording',
-          //   padding: EdgeInsets.zero,
-          //   splashRadius: 16,
-          // ),
+           IconButton(
+             icon: Icon(Icons.cancel_outlined, color: Colors.grey[500], size: 20),
+             onPressed: _cancelRecording,
+             tooltip: 'Cancel Recording',
+             padding: EdgeInsets.zero,
+             splashRadius: 16,
+             
+             ),
         ],
       );
     }

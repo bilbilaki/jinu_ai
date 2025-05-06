@@ -32,7 +32,7 @@ class LongTermMemoryService with ChangeNotifier {
       try {
         final List<dynamic> decodedList = jsonDecode(memoryJson); // Decode as dynamic list first
         _memoryItems = decodedList
-            .where((item) => item is Map<String, dynamic>) // Ensure items are maps
+            .whereType<Map<String, dynamic>>() // Ensure items are maps
             .map((item) => MemoryItem.fromJson(item as Map<String, dynamic>))
             .toList();
         _memoryItems.sort((a, b) => b.timestamp.compareTo(a.timestamp));

@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:uuid/uuid.dart';
-import 'package:flutter/material.dart'; // Keep for potential future color use
+// Keep for potential future color use
 
 const _uuid = Uuid();
 

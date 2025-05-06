@@ -15,3 +15,8 @@ final memoryItemsProvider = Provider<List<MemoryItem>>((ref) {
   final memoryService = ref.watch(longTermMemoryServiceProvider);
   return memoryService.memoryItems;
 });
+
+final memoryItemCountProvider = Provider<Object>((ref) {
+  final memoryService = ref.watch(longTermMemoryServiceProvider);
+  return memoryService.memoryItems.nonNulls;
+});

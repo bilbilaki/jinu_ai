@@ -89,10 +89,10 @@ class AiStudioCloneApp extends ConsumerWidget { // Use ConsumerWidget
                 overlayColor: Colors.blue.withOpacity(0.2),
             ),
             switchTheme: SwitchThemeData(
-                thumbColor: MaterialStateProperty.resolveWith<Color?>((states) =>
-                    states.contains(MaterialState.selected) ? Colors.blue[300] : Colors.grey[600]),
-                trackColor: MaterialStateProperty.resolveWith<Color?>((states) =>
-                    states.contains(MaterialState.selected) ? Colors.blue[300]?.withOpacity(0.5) : Colors.grey[800]),
+                thumbColor: WidgetStateProperty.resolveWith<Color?>((states) =>
+                    states.contains(WidgetState.selected) ? Colors.blue[300] : Colors.grey[600]),
+                trackColor: WidgetStateProperty.resolveWith<Color?>((states) =>
+                    states.contains(WidgetState.selected) ? Colors.blue[300]?.withOpacity(0.5) : Colors.grey[800]),
              ),
              appBarTheme: AppBarTheme(
                  backgroundColor: const Color(0xFF2d2f32),

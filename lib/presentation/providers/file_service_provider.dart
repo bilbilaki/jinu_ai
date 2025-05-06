@@ -1,8 +1,6 @@
-import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/services/file_service.dart';
-import '../../data/models/file_model.dart';
 
 /// Provides an instance of [FileService].
 ///

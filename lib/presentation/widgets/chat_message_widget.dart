@@ -66,10 +66,12 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> { // Chan
       });
 
       _playerCompleteSubscription = _audioPlayer.onPlayerComplete.listen((event) {
-         if (mounted) setState(() {
+         if (mounted) {
+           setState(() {
               _playerState = PlayerState.completed;
                _position = Duration.zero; // Reset position on completion
            });
+         }
       });
 
        // Set the source when the widget initializes
@@ -206,7 +208,7 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> { // Chan
      try {
            if (widget.message.contentType == ContentType.image && Platform.isAndroid || Platform.isIOS) {
                 // Try saving image specifically to gallery (if package included)
-                  await fileService.saveImageToGallery;
+                  fileService.saveImageToGallery;
                 if (!success) { // If gallery save fails, fall back to general save
                         savedPath = await fileService.saveFileToAppDirectory(FileModel.fromFile(sourceFile), defaultFileName);
                       success = savedPath != null;
@@ -605,8 +607,9 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> { // Chan
      IconData fileIcon = Icons.insert_drive_file_outlined; // Default icon
      final mime = message.mimeType?.toLowerCase();
      if (mime != null) {
-         if (mime.startsWith('application/pdf')) fileIcon = Icons.picture_as_pdf_outlined;
-         else if (mime.startsWith('application/vnd.openxmlformats-officedocument.wordprocessingml') || mime.startsWith('application/msword')) fileIcon = Icons.description_outlined; // Word doc
+         if (mime.startsWith('application/pdf')) {
+           fileIcon = Icons.picture_as_pdf_outlined;
+         } else if (mime.startsWith('application/vnd.openxmlformats-officedocument.wordprocessingml') || mime.startsWith('application/msword')) fileIcon = Icons.description_outlined; // Word doc
          else if (mime.startsWith('application/vnd.openxmlformats-officedocument.spreadsheetml') || mime.startsWith('application/vnd.ms-excel')) fileIcon = Icons.calculate_outlined; // Excel
          // Add more specific icons based on MIME type if desired
      }

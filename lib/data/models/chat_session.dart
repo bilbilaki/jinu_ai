@@ -1,5 +1,4 @@
 import 'package:uuid/uuid.dart';
-import 'chat_message.dart';
 
 const uuid = Uuid();
 

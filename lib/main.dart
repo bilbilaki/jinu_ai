@@ -8,7 +8,7 @@ import 'presentation/providers/settings_provider.dart'; // To potentially pre-fe
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final settingsService = await SettingsService();
+  final settingsService = SettingsService();
   late final container = ProviderContainer(
   );
   await container.read(settingsServiceProvider).loadSettings();

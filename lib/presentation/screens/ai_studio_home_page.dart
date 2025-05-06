@@ -42,16 +42,17 @@ class AiStudioHomePage extends ConsumerWidget {
           ],
         ),
         drawer: Drawer(
+          backgroundColor: const Color(0xFF2d2f32),
           child: LeftNavigationPanel(
             isMobileLayout: true,
             isCollapsed: false,
-          ), // Always expanded in drawer
-          backgroundColor: const Color(0xFF2d2f32),
+          ),
         ),
         endDrawer: Drawer(
           // Right Drawer for Settings
-          child: RightSettingsPanel(), // Settings panel content
           backgroundColor: const Color(0xFF2d2f32),
+          // Right Drawer for Settings
+          child: RightSettingsPanel(),
         ),
         body: CenterContentPanel(isMobileLayout: isSmallScreen,
         ), // Pass mobile flag to center panel

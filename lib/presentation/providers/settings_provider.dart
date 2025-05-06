@@ -5,8 +5,8 @@ import '../../data/services/settings_service.dart'; // Adjust path
 
 // Provider for the SettingsService instance (ChangeNotifier based)
 final container = ProviderContainer();
-late final settingsService = container.read(settingsServiceProvider);
-late final setsettingsService = settingsServiceProvider.overrideWith(
+final settingsService = container.read(settingsServiceProvider);
+final setsettingsService = settingsServiceProvider.overrideWith(
   (ref) => settingsService,
 );
 
@@ -165,6 +165,10 @@ final usagemode = Provider<String>((ref) {
 final responseFormat = Provider<Map<String, String>?>((ref) {
   final settingsService = ref.watch(settingsServiceProvider);
   return settingsService.customoutputstyle;
+});
+final defaultvoice = Provider<String>((ref) { // Changed from Map<String, String>? to String
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.setdefaultvoice;
 });
 Future<void> resetSettings() async {
   

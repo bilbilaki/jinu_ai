@@ -1,5 +1,4 @@
 // lib/data/models/chat_session_item.dart
-import 'dart:convert';
 import 'package:flutter/material.dart'; // For debugPrint
 import 'package:uuid/uuid.dart';
 import 'chat_message.dart'; // Import the ChatMessage model

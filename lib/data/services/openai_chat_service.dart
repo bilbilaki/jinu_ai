@@ -3,11 +3,18 @@ import 'dart:convert';
 import 'dart:io'; // Keep for audio/image file handling if needed
 import 'package:dart_openai/dart_openai.dart'; // Make sure this is configured
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart'; // For debugPrint
+import 'package:jinu/data/models/memory_item.dart';
 import 'package:jinu/presentation/providers/settings_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:jinu/data/services/long_term_memory_service.dart';
+import 'package:jinu/presentation/providers/memory_provider.dart';
+import 'package:uuid/uuid.dart';
 import '../models/chat_message.dart'; // Adjust import path
+import 'package:http/http.dart' as http; // Import http package
+import 'package:mime/mime.dart'; // For MIME type lookup
 
+Uuid uuid = const Uuid(); // For generating unique IDs
 // NOTE: This service primarily interacts with the OpenAI SDK.
 // It relies on the API key being set globally in main.dart.
 
@@ -45,33 +52,257 @@ class OpenAIChatService {
     OpenAI.showResponsesLogs = kDebugMode;
   }
 
+  final List<OpenAIToolModel> memoryTools = [
+    OpenAIToolModel(
+      type: 'function',
+      function: OpenAIFunctionModel(
+        name: 'save_to_memory',
+        description:
+            'Save important information to long-term memory for future reference',
+        parametersSchema: {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "description":
+                  "A short, descriptive title or topic for this memory (3-5 words)",
+            },
+            "content": {
+              "type": "string",
+              "description": "The detailed information to remember",
+            },
+          },
+          "required": ["key", "content"],
+        },
+      ),
+    ),
+    OpenAIToolModel(
+      type: 'function',
+      function: OpenAIFunctionModel(
+        name: 'search_memory',
+        description: 'Search long-term memory for relevant information',
+        parametersSchema: {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "The search term or topic to look up in memory",
+            },
+          },
+          "required": ["query"],
+        },
+      ),
+    ),
+  ];
+
   // --- Chat Completion ---
   Future<OpenAIChatCompletionModel> generateChatCompletion({
     required String model,
     required List<ChatMessage> messages, // Use our app's model
-    required double temperature,
+    double? temperature,
     int? maxTokens,
     //topK, // Not directly supported by OpenAI chat completion API
     double? topP,
+    Map<String, dynamic>? webSearchOptions,
     // List<String>? stop, // Add if needed
     // int? seed, // Add if needed
     // Map<String, String>? responseFormat, // Add if needed
-    // List<OpenAIToolModel>? tools, // Add if needed for actual tool calling
-    // String? toolChoice, // Add if needed
+    bool enableMemoryTools = true,
   }) async {
+    final settings = ref.read(settingsServiceProvider);
+    _configureOpenAI(); // Refresh SDK config just in case
+
+    bool hasImage = messages.any(
+      (m) =>
+          m.contentType == ContentType.image &&
+          m.filePath != null &&
+          m.filePath!.isNotEmpty,
+    );
+
+    bool useHttpPath =
+        hasImage || (webSearchOptions != null && webSearchOptions.isNotEmpty);
+
+    // Determine API URL for HTTP calls
+    // Your new code uses 'https://api.openai.com/v1/chat/completions'
+    // Allow override from settings.custoombaseurl if it's a full chat completions URL
+    String httpApiUrl = 'https://api.openai.com/v1/chat/completions'; // Default
+    if (settings.custoombaseurl.isNotEmpty &&
+        settings.custoombaseurl.startsWith('http')) {
+      // If custoombaseurl is just the base (e.g. https://api.custom.com) append /v1/chat/completions
+      // If it's already the full path, use it as is.
+      if (settings.custoombaseurl.endsWith('/v1/chat/completions') ||
+          settings.custoombaseurl.endsWith('/chat/completions')) {
+        httpApiUrl = settings.custoombaseurl;
+      } else {
+        // Append standard path if custom base URL doesn't look like a full chat endpoint
+        httpApiUrl =
+            '${settings.custoombaseurl.replaceAll(RegExp(r'/$'), '')}/v1/chat/completions';
+      }
+    }
+    debugPrint("Chat Completion API URL for HTTP: $httpApiUrl");
+
+    if (useHttpPath) {
+      // --- HTTP Path for Vision or Web Search ---
+      debugPrint(
+        "Using HTTP path for chat completion. HasImage: $hasImage, WebSearch: ${webSearchOptions != null}",
+      );
+
+      List<Map<String, dynamic>> httpMessages = [];
+      for (final message in messages) {
+        String role;
+        // Use OpenAI role if available, otherwise map from sender
+        if (message.openAIRole != null) {
+          role = message.openAIRole!.name;
+        } else {
+          switch (message.sender) {
+            case MessageSender.user:
+              role = "user";
+              break;
+            case MessageSender.ai:
+              role = "assistant";
+              break;
+            case MessageSender.system:
+              role = "system";
+              break;
+          }
+        }
+
+        if (message.contentType == ContentType.image &&
+            message.filePath != null &&
+            message.filePath!.isNotEmpty) {
+          File imageFile = File(message.filePath!);
+          if (await imageFile.exists()) {
+            final bytes = await imageFile.readAsBytes();
+            final base64Image = base64Encode(bytes);
+            String? mimeType = lookupMimeType(message.filePath!);
+            mimeType ??= 'image/jpeg'; // Default if lookup fails
+
+            List<Map<String, dynamic>> contentParts = [];
+            // Vision models usually expect text before image if both are present for a single message part
+            if (message.content.isNotEmpty) {
+              contentParts.add({"type": "text", "text": message.content});
+            }
+            contentParts.add({
+              "type": "image_url",
+              "image_url": {"url": "data:$mimeType;base64,$base64Image"},
+            });
+            httpMessages.add({"role": role, "content": contentParts});
+          } else {
+            // If image file not found, send only text content if available
+            debugPrint(
+              "Image file not found: ${message.filePath}, sending text only for this message.",
+            );
+            if (message.content.isNotEmpty) {
+              httpMessages.add({"role": role, "content": message.content});
+            } else {
+              // Or a placeholder if text is also empty
+              httpMessages.add({
+                "role": role,
+                "content":
+                    "[Image not found: ${message.fileName ?? 'unknown'}]",
+              });
+            }
+          }
+        } else {
+          // Text-only message part
+          if (message.content.isNotEmpty) {
+            // Ensure content is not empty
+            httpMessages.add({"role": role, "content": message.content});
+          }
+        }
+      }
+
+      if (httpMessages.isEmpty) {
+        throw Exception("Cannot send HTTP request with no prepared messages.");
+      }
+
+      final requestBody = <String, dynamic>{
+        "model": model,
+        "messages": httpMessages,
+        // if (maxTokens != null && maxTokens > 0) "max_tokens": maxTokens,
+        //"temperature": temperature, // OpenAI API typically requires temperature
+        // if (topP != null) "top_p": topP,
+        // "n": 1, // Usually default
+      };
+
+      if (webSearchOptions != null && webSearchOptions.isNotEmpty) {
+        // The new code snippet directly adds 'web_search_options' at the root of the JSON body
+        requestBody.addAll(webSearchOptions);
+      }
+
+      debugPrint("--- Sending to OpenAI via HTTP ---");
+      debugPrint("Model: $model");
+      debugPrint("Temperature: $temperature");
+      debugPrint("MaxTokens: $maxTokens");
+      debugPrint("Request Body for HTTP: ${jsonEncode(requestBody)}");
+
+      try {
+        final response = await http.post(
+          Uri.parse(httpApiUrl),
+          headers: {
+            'Authorization': 'Bearer ${settings.apitokenmain}',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(requestBody),
+        );
+
+        final responseBody = response.body;
+        debugPrint("HTTP Response Status: ${response.statusCode}");
+        debugPrint("HTTP Response Body: $responseBody");
+
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> data = jsonDecode(responseBody);
+          // IMPORTANT: Adapt the HTTP response to OpenAIChatCompletionModel
+          // Assuming the HTTP response structure is compatible with OpenAIChatCompletionModel.fromMap
+          return OpenAIChatCompletionModel.fromMap(data);
+        } else {
+          String errorMsg = "API Error (${response.statusCode})";
+          try {
+            final Map<String, dynamic> errJson = jsonDecode(responseBody);
+            if (errJson['error'] != null &&
+                errJson['error']['message'] != null) {
+              errorMsg = errJson['error']['message'];
+            } else {
+              errorMsg = responseBody;
+            }
+          } catch (_) {
+            errorMsg = responseBody;
+          }
+
+          if (response.statusCode == 401) {
+            throw Exception(
+              "OpenAI API Key Invalid or Expired (HTTP). $errorMsg",
+            );
+          }
+          if (response.statusCode == 429) {
+            throw Exception("OpenAI Rate Limit Exceeded (HTTP). $errorMsg");
+          }
+          if (response.statusCode == 400) {
+            if (errorMsg.toLowerCase().contains("image")) {
+              throw Exception(
+                "Model may not support images, or image data is invalid (HTTP). Error: $errorMsg",
+              );
+            }
+          }
+          throw Exception(
+            "OpenAI API Error (HTTP ${response.statusCode}): $errorMsg",
+          );
+        }
+      } catch (e) {
+        debugPrint("Error during HTTP Chat Completion: $e");
+        rethrow;
+      }
+    } else {
+      // --- SDK Path for Text-Only Chat ---
+      debugPrint("Using SDK path for text-only chat completion.");
+    }
     // Convert our ChatMessage list to OpenAI's format
     final List<OpenAIChatCompletionChoiceMessageModel> openAIMessages = [];
     for (final message in messages) {
-      final converted = await convertToOpenAIMessage(
+      final converted = convertToOpenAIMessage(
         message,
       ); // Make helper async for file reading
-      if (converted != null) {
-        openAIMessages.add(converted);
-      } else {
-        debugPrint(
-          "Warning: Skipping message conversion for message ID ${message.id}",
-        );
-      }
+      openAIMessages.add(converted);
     }
 
     if (openAIMessages.isEmpty) {
@@ -88,26 +319,30 @@ class OpenAIChatService {
 
     try {
       return await OpenAI.instance.chat.create(
-        model: model, // Use the passed model
+        model: model,
         messages: openAIMessages,
         temperature: temperature,
         maxTokens: maxTokens,
         topP: topP,
-        // TODO: Add stop, seed, responseFormat, tools, toolChoice etc. if/when needed
-        // tools: tools,
-        // toolChoice: toolChoice,
-        n: 1, // Usually want 1 choice for chat
+        tools: enableMemoryTools ? memoryTools : null, // Include tools here
+        toolChoice:
+            enableMemoryTools
+                ? 'auto'
+                : null, // Let AI decide when to use tools
+        n: 1,
       );
     } on RequestFailedException catch (e) {
       debugPrint(
         "OpenAI API Request Failed: ${e.message} (Status Code: ${e.statusCode})",
       );
-      if (e.statusCode == 401)
+      if (e.statusCode == 401) {
         throw Exception(
           "OpenAI API Key Invalid or Expired. Please check settings.",
         );
-      if (e.statusCode == 429)
+      }
+      if (e.statusCode == 429) {
         throw Exception("OpenAI Rate Limit Exceeded. Please try again later.");
+      }
       if (e.statusCode == 400) {
         // Bad request often means model incompatibility or bad input
         if (e.message.toLowerCase().contains("image")) {
@@ -123,7 +358,175 @@ class OpenAIChatService {
       rethrow; // Rethrow the original error
     }
   }
-  
+
+  Future<List<String>> handleToolCalls(OpenAIChatCompletionModel chatCompletion) async {
+    final message = chatCompletion.choices.first.message;
+    final List<String> toolResults = [];
+    
+    if (message.haveToolCalls) {
+      for (var toolCall in message.toolCalls!) {
+        try {
+          switch (toolCall.function.name) {
+            case 'save_to_memory':
+              final result = await _handleSaveMemory(toolCall);
+              toolResults.add(result);
+              break;
+            case 'search_memory':
+              final result = await _handleSearchMemory(toolCall);
+              toolResults.add(result);
+              break;
+            default:
+              debugPrint('Unhandled tool call: ${toolCall.function.name}');
+              toolResults.add('Unknown tool called: ${toolCall.function.name}');
+          }
+        } catch (e) {
+          debugPrint('Error handling tool call ${toolCall.function.name}: $e');
+          toolResults.add('Error executing ${toolCall.function.name}: ${e.toString()}');
+        }
+      }
+    }
+    
+    return toolResults;
+  }
+
+  Future<String> _handleSaveMemory(OpenAIResponseToolCall toolCall) async {
+    final memoryService = ref.read(longTermMemoryServiceProvider);
+    final decodedArgs = jsonDecode(toolCall.function.arguments);
+    
+    final key = decodedArgs['key'] as String;
+    final content = decodedArgs['content'] as String;
+    
+    debugPrint('AI is saving to memory - Key: $key, Content: $content');
+    
+    final result = await memoryService.saveMemoryItem(key, content);
+    
+    if (result['status'] == 'Success') {
+      return "Successfully saved memory with key '$key'";
+    } else {
+      return "Failed to save memory: ${result['message']}";
+    }
+  }
+
+  Future<String> _handleSearchMemory(OpenAIResponseToolCall toolCall) async {
+    final memoryService = ref.read(longTermMemoryServiceProvider);
+    final decodedArgs = jsonDecode(toolCall.function.arguments);
+    
+    final query = decodedArgs['query'] as String;
+    
+    debugPrint('AI is searching memory for: $query');
+    
+    final result = memoryService.retrieveMemoryItems(query);
+    
+    if (result['status'] == 'Success') {
+      final memories = result['relevant_memories'] as List;
+      if (memories.isEmpty) {
+        return "No memories found matching '$query'";
+      } else {
+        return "Found ${memories.length} memories matching '$query'";
+      }
+    } else {
+      return "Error searching memory: ${result['message']}";
+    }
+  }
+
+  ///////
+
+  // --- Text-to-Speech (TTS) using SDK ---
+  Future<File?> createAudioSpeech({
+    required String textContent,
+    String? outputDir, // Nullable, will use temp if null
+    required String filename,
+    // Model and voice from your new code, make them configurable via settings
+    String ttsModel = "gpt-4o-mini-tts",
+    String voice = "nova", // As per your new code example "nova"
+  }) async {
+    _configureOpenAI(); // Ensure SDK is ready
+    final settings = ref.read(settingsServiceProvider);
+    // Allow override from settings if available
+    final actualTtsModel =
+        settings.voiceprocessingmodel.isNotEmpty
+            ? settings.voiceprocessingmodel
+            : ttsModel;
+    final actualVoice =
+        settings.setdefaultvoice.isNotEmpty ? settings.setdefaultvoice : voice;
+
+    try {
+      Directory dir;
+      if (outputDir != null && outputDir.isNotEmpty) {
+        dir = Directory(outputDir);
+      } else {
+        dir = await getTemporaryDirectory();
+      }
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+
+      File audioFile = await OpenAI.instance.audio.createSpeech(
+        model: actualTtsModel,
+        input: textContent,
+        voice: actualVoice,
+        responseFormat: OpenAIAudioSpeechResponseFormat.mp3,
+        outputDirectory: dir,
+        outputFileName:
+            filename.endsWith('.mp3') ? filename.split('.').first : filename,
+      );
+      debugPrint(
+        "TTS Audio created at: ${audioFile.path} using model $actualTtsModel, voice $actualVoice",
+      );
+      return audioFile;
+    } catch (e) {
+      debugPrint("Error creating TTS audio: $e");
+      if (e is RequestFailedException) {
+        debugPrint("TTS API Error (${e.statusCode}): ${e.message}");
+      }
+      return null;
+    }
+  }
+
+  // --- Speech-to-Text (Transcription) using SDK ---
+  Future<String?> transcribeAudioFile({
+    required String filePath,
+    // Model from your new code, make configurable via settings
+    String transcriptionModel =
+        "gpt-4o-mini-transcribe", // "gpt-4o-mini-transcribe" was in new code
+  }) async {
+    _configureOpenAI(); // Ensure SDK is ready
+    final settings = ref.read(settingsServiceProvider);
+    // Allow override from settings
+    final actualTranscriptionModel = transcriptionModel;
+
+    //   settings.voiceprocessingmodel.isNotEmpty
+    //     ? settings.voiceprocessingmodel
+    //   : transcriptionModel;
+    //until make settings for this
+    // Check if the file exists before attempting to transcribe
+    final file = File(filePath);
+    if (!await file.exists()) {
+      debugPrint("Error: Audio file not found at $filePath for transcription.");
+      return null;
+    }
+
+    try {
+      OpenAIAudioModel transcription = await OpenAI.instance.audio
+          .createTranscription(
+            file: file,
+            model: actualTranscriptionModel, // Use configured model
+            responseFormat:
+                OpenAIAudioResponseFormat.json, // new code uses json
+          );
+      debugPrint(
+        "Transcription successful with model $actualTranscriptionModel: ${transcription.text}",
+      );
+      return transcription.text;
+    } catch (e) {
+      debugPrint("Error transcribing audio: $e");
+      if (e is RequestFailedException) {
+        debugPrint("Transcription API Error (${e.statusCode}): ${e.message}");
+      }
+      return null;
+    }
+  }
+
   // --- Other OpenAI SDK Interactions ---
 
   // List Models (via SDK)
@@ -236,10 +639,10 @@ class OpenAIChatService {
     OpenAIImageSize imageSize;
     switch (size) {
       case "1024x1792":
-        imageSize = OpenAIImageSize.size1792Horizontal!;
+        imageSize = OpenAIImageSize.size1792Horizontal;
         break; // Note: Check actual enum names in your SDK version
       case "1792x1024":
-        imageSize = OpenAIImageSize.size1792Vertical!;
+        imageSize = OpenAIImageSize.size1792Vertical;
         break; // Note: Might be different
       case "1024x1024":
       default:
@@ -285,47 +688,46 @@ class OpenAIChatService {
   // --- Helper ---
   // Converts our app's ChatMessage to the OpenAI SDK's format.
   // Needs enhancement for multi-modal messages (images).
-   OpenAIChatCompletionChoiceMessageModel convertToOpenAIMessage(
-      ChatMessage message,
-    ) {
-      // If the message already has an OpenAI role, use that for conversion
-      if (message.openAIRole != null) {
-        return OpenAIChatCompletionChoiceMessageModel(
-          content: [
-            OpenAIChatCompletionChoiceMessageContentItemModel.text(
-              message.content,
-            ),
-          ],
-          role: OpenAIChatMessageRole.values.firstWhere(
-            (e) => e.name == message.openAIRole!.name,
-            orElse: () => OpenAIChatMessageRole.user,
-          ),
-        );
-      }
-
-      // Fallback to original sender-based conversion
-      OpenAIChatMessageRole role;
-      switch (message.sender) {
-        case MessageSender.user:
-          role = OpenAIChatMessageRole.user;
-          break;
-        case MessageSender.ai:
-          role = OpenAIChatMessageRole.assistant;
-          break;
-        case MessageSender.system:
-          role = OpenAIChatMessageRole.system;
-          break;
-      }
-
+  OpenAIChatCompletionChoiceMessageModel convertToOpenAIMessage(
+    ChatMessage message,
+  ) {
+    // If the message already has an OpenAI role, use that for conversion
+    if (message.openAIRole != null) {
       return OpenAIChatCompletionChoiceMessageModel(
         content: [
           OpenAIChatCompletionChoiceMessageContentItemModel.text(
             message.content,
           ),
         ],
-        role: role,
+        role: OpenAIChatMessageRole.values.firstWhere(
+          (e) => e.name == message.openAIRole!.name,
+          orElse: () => OpenAIChatMessageRole.user,
+        ),
       );
-    }}
+    }
+
+    // Fallback to original sender-based conversion
+    OpenAIChatMessageRole role;
+    switch (message.sender) {
+      case MessageSender.user:
+        role = OpenAIChatMessageRole.user;
+        break;
+      case MessageSender.ai:
+        role = OpenAIChatMessageRole.assistant;
+        break;
+      case MessageSender.system:
+        role = OpenAIChatMessageRole.system;
+        break;
+    }
+
+    return OpenAIChatCompletionChoiceMessageModel(
+      content: [
+        OpenAIChatCompletionChoiceMessageContentItemModel.text(message.content),
+      ],
+      role: role,
+    );
+  }
+}
 
 
 //     // Add text content (caption or main text)
