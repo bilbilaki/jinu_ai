@@ -67,7 +67,7 @@ class _ImageGenerationDrawerState extends State<ImageGenerationDrawer> {
       final response = await http.post(
         Uri.parse('https://router.huggingface.co/hf-inference/models/$_selectedModel'),
         headers: {
-          'Authorization': 'Bearer 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', // Replace with your actual token
+          'Authorization': 'Bearer {{$HFTOKEN}}', // Replace with your actual token
           'Content-Type': 'application/json',
         },
         body: jsonEncode(requestData),
