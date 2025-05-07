@@ -5,20 +5,24 @@ import '../providers/sidebar_provider.dart';
 import '../widgets/left_navigation_panel.dart';
 import '../widgets/center_content_panel.dart';
 import '../widgets/right_settings_panel.dart';
+import '../widgets/image_generating.dart';
 
 class AiStudioHomePage extends ConsumerStatefulWidget {
   const AiStudioHomePage({super.key});
 
   @override
-  _AiStudioHomePageConsumerState createState() => _AiStudioHomePageConsumerState();
+  _AiStudioHomePageConsumerState createState() =>
+      _AiStudioHomePageConsumerState();
 }
 
-class _AiStudioHomePageConsumerState extends ConsumerState<AiStudioHomePage> 
-    with TickerProviderStateMixin { // Changed to TickerProviderStateMixin
+class _AiStudioHomePageConsumerState extends ConsumerState<AiStudioHomePage>
+    with TickerProviderStateMixin {
+  // Changed to TickerProviderStateMixin
   // Left Drawer Tab Controller
   late TabController _leftDrawerTabController;
   // Right Drawer Tab Controller
   late TabController _rightDrawerTabController;
+  late TabController _ImageGenerationDrawerController;
 
   @override
   void initState() {
@@ -26,6 +30,7 @@ class _AiStudioHomePageConsumerState extends ConsumerState<AiStudioHomePage>
     // Initialize tab controllers (3 tabs each)
     _leftDrawerTabController = TabController(length: 3, vsync: this);
     _rightDrawerTabController = TabController(length: 3, vsync: this);
+    _ImageGenerationDrawerController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -33,6 +38,7 @@ class _AiStudioHomePageConsumerState extends ConsumerState<AiStudioHomePage>
     // Dispose of tab controllers
     _leftDrawerTabController.dispose();
     _rightDrawerTabController.dispose();
+    _ImageGenerationDrawerController.dispose();
     super.dispose();
   }
 
@@ -70,9 +76,15 @@ class _AiStudioHomePageConsumerState extends ConsumerState<AiStudioHomePage>
               TabBar(
                 controller: _leftDrawerTabController,
                 tabs: [
-                  Tab(icon: Icon(Icons.menu), text: 'Menu'),
-                  Tab(icon: Icon(Icons.category), text: 'Categories'),
-                  Tab(icon: Icon(Icons.history), text: 'History'),
+                  Tab(
+                    icon: Icon(Icons.query_builder_outlined),
+                    text: 'History',
+                  ),
+                  Tab(icon: Icon(Icons.network_wifi_sharp), text: 'Web'),
+                  Tab(
+                    icon: Icon(Icons.assured_workload_rounded),
+                    text: 'Coming Soon',
+                  ),
                 ],
               ),
               Expanded(
@@ -98,9 +110,15 @@ class _AiStudioHomePageConsumerState extends ConsumerState<AiStudioHomePage>
               TabBar(
                 controller: _rightDrawerTabController,
                 tabs: [
-                  Tab(icon: Icon(Icons.settings), text: 'Settings'),
-                  Tab(icon: Icon(Icons.notifications), text: 'Notifications'),
-                  Tab(icon: Icon(Icons.help), text: 'Help'),
+                  Tab(
+                    icon: Icon(Icons.dashboard_customize_outlined),
+                    text: 'Chat Param',
+                  ),
+                  Tab(
+                    icon: Icon(Icons.photo_album_outlined),
+                    text: 'Image generation',
+                  ),
+                  Tab(icon: Icon(Icons.translate), text: 'Translate'),
                 ],
               ),
               Expanded(
@@ -108,8 +126,8 @@ class _AiStudioHomePageConsumerState extends ConsumerState<AiStudioHomePage>
                   controller: _rightDrawerTabController,
                   children: [
                     RightSettingsPanel(),
-                    Center(child: Text('Notifications Content')),
-                    Center(child: Text('Help Content')),
+                    Center(child: ImageGenerationDrawer()),
+                    Center(child: Text('Translate Content')),
                   ],
                 ),
               ),
@@ -133,11 +151,17 @@ class _AiStudioHomePageConsumerState extends ConsumerState<AiStudioHomePage>
                 children: [
                   TabBar(
                     controller: _leftDrawerTabController,
-                    isScrollable: true,
+                    isScrollable: false,
                     tabs: [
-                      Tab(icon: Icon(Icons.menu), text: 'Menu'),
-                      Tab(icon: Icon(Icons.category), text: 'Categories'),
-                      Tab(icon: Icon(Icons.history), text: 'History'),
+                      Tab(
+                        icon: Icon(Icons.query_builder_outlined),
+                        text: 'History',
+                      ),
+                      Tab(icon: Icon(Icons.network_wifi_sharp), text: 'Web'),
+                      Tab(
+                        icon: Icon(Icons.assured_workload_rounded),
+                        text: 'Coming Soon',
+                      ),
                     ],
                   ),
                   Expanded(
@@ -158,10 +182,7 @@ class _AiStudioHomePageConsumerState extends ConsumerState<AiStudioHomePage>
             ),
 
             // Center Content Panel
-            Expanded(
-              flex: 3,
-              child: CenterContentPanel(isMobileLayout: false),
-            ),
+            Expanded(flex: 3, child: CenterContentPanel(isMobileLayout: false)),
 
             // Right Settings Panel with Tabs
             Container(
@@ -171,11 +192,17 @@ class _AiStudioHomePageConsumerState extends ConsumerState<AiStudioHomePage>
                 children: [
                   TabBar(
                     controller: _rightDrawerTabController,
-                    isScrollable: true,
+                    isScrollable: false,
                     tabs: [
-                      Tab(icon: Icon(Icons.settings), text: 'Settings'),
-                      Tab(icon: Icon(Icons.notifications), text: 'Notifications'),
-                      Tab(icon: Icon(Icons.help), text: 'Help'),
+                      Tab(
+                        icon: Icon(Icons.dashboard_customize_outlined),
+                        text: 'Chat Param',
+                      ),
+                      Tab(
+                        icon: Icon(Icons.photo_album_outlined),
+                        text: 'Image generation',
+                      ),
+                      Tab(icon: Icon(Icons.translate), text: 'Translate'),
                     ],
                   ),
                   Expanded(
@@ -183,8 +210,8 @@ class _AiStudioHomePageConsumerState extends ConsumerState<AiStudioHomePage>
                       controller: _rightDrawerTabController,
                       children: [
                         RightSettingsPanel(),
-                        Center(child: Text('Notifications Content')),
-                        Center(child: Text('Help Content')),
+                        Center(child: ImageGenerationDrawer()),
+                        Center(child: Text('Translate Content')),
                       ],
                     ),
                   ),

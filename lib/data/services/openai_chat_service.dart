@@ -438,93 +438,75 @@ class OpenAIChatService {
     String ttsModel = "gpt-4o-mini-tts",
     String voice = "nova", // As per your new code example "nova"
   }) async {
-    _configureOpenAI(); // Ensure SDK is ready
-    final settings = ref.read(settingsServiceProvider);
-    // Allow override from settings if available
-    final actualTtsModel =
-        settings.voiceprocessingmodel.isNotEmpty
-            ? settings.voiceprocessingmodel
-            : ttsModel;
-    final actualVoice =
-        settings.setdefaultvoice.isNotEmpty ? settings.setdefaultvoice : voice;
+    _configureOpenAI();
+  final settings = ref.read(settingsServiceProvider);
 
-    try {
-      Directory dir;
-      if (outputDir != null && outputDir.isNotEmpty) {
-        dir = Directory(outputDir);
-      } else {
-        dir = await getTemporaryDirectory();
-      }
-      if (!await dir.exists()) {
-        await dir.create(recursive: true);
-      }
+  final actualTtsModel =  "gpt-4o-mini-tts"; // Default TTS model
+  final actualVoice = 
+   (settings.setdefaultvoice.isNotEmpty
+    ? settings.setdefaultvoice
+    : "nova"); // Default voice
 
-      File audioFile = await OpenAI.instance.audio.createSpeech(
-        model: actualTtsModel,
-        input: textContent,
-        voice: actualVoice,
-        responseFormat: OpenAIAudioSpeechResponseFormat.mp3,
-        outputDirectory: dir,
-        outputFileName:
-            filename.endsWith('.mp3') ? filename.split('.').first : filename,
-      );
-      debugPrint(
-        "TTS Audio created at: ${audioFile.path} using model $actualTtsModel, voice $actualVoice",
-      );
-      return audioFile;
-    } catch (e) {
-      debugPrint("Error creating TTS audio: $e");
-      if (e is RequestFailedException) {
-        debugPrint("TTS API Error (${e.statusCode}): ${e.message}");
-      }
-      return null;
-    }
+  debugPrint("Creating speech with model: $actualTtsModel, voice: $actualVoice");
+
+  try {
+   Directory dir = outputDir != null && outputDir.isNotEmpty
+    ? Directory(outputDir)
+    : await getTemporaryDirectory();
+   if (!await dir.exists()) await dir.create(recursive: true);
+
+   // Ensure filename doesn't have extension if SDK adds it, or add if SDK expects it fully formed.
+   // The SDK's createSpeech outputFileName does not need extension.
+   String baseFileName = filename.endsWith('.mp3') ? filename.substring(0, filename.length - 4) : filename;
+
+
+   File audioFile = await OpenAI.instance.audio.createSpeech(
+    model: actualTtsModel,
+    input: textContent,
+    voice: actualVoice,
+    responseFormat: OpenAIAudioSpeechResponseFormat.mp3, // Common format
+    outputDirectory: dir,
+    outputFileName: baseFileName,
+   );
+   debugPrint("TTS Audio created at: ${audioFile.path}");
+   return audioFile;
+  } catch (e) {
+   debugPrint("Error creating TTS audio: $e");
+   return null;
   }
+ }
 
-  // --- Speech-to-Text (Transcription) using SDK ---
-  Future<String?> transcribeAudioFile({
-    required String filePath,
-    // Model from your new code, make configurable via settings
-    String transcriptionModel =
-        "gpt-4o-mini-transcribe", // "gpt-4o-mini-transcribe" was in new code
-  }) async {
-    _configureOpenAI(); // Ensure SDK is ready
-    final settings = ref.read(settingsServiceProvider);
-    // Allow override from settings
-    final actualTranscriptionModel = transcriptionModel;
+ // --- Speech-to-Text (Transcription) using SDK ---
+ Future<String?> transcribeAudioFile({
+  required String filePath,
+  String? transcriptionModelOverride,
+ }) async {
+  _configureOpenAI();
+  final settings = ref.read(settingsServiceProvider);
+  final actualTranscriptionModel = transcriptionModelOverride ??
+   (settings.voiceprocessingmodel.isNotEmpty // Assuming you add a setting for STT model
+    ? settings.voiceprocessingmodel
+    : "gpt-4o-mini-transcript"); // Default STT model
 
-    //   settings.voiceprocessingmodel.isNotEmpty
-    //     ? settings.voiceprocessingmodel
-    //   : transcriptionModel;
-    //until make settings for this
-    // Check if the file exists before attempting to transcribe
-    final file = File(filePath);
-    if (!await file.exists()) {
-      debugPrint("Error: Audio file not found at $filePath for transcription.");
-      return null;
-    }
-
-    try {
-      OpenAIAudioModel transcription = await OpenAI.instance.audio
-          .createTranscription(
-            file: file,
-            model: actualTranscriptionModel, // Use configured model
-            responseFormat:
-                OpenAIAudioResponseFormat.json, // new code uses json
-          );
-      debugPrint(
-        "Transcription successful with model $actualTranscriptionModel: ${transcription.text}",
-      );
-      return transcription.text;
-    } catch (e) {
-      debugPrint("Error transcribing audio: $e");
-      if (e is RequestFailedException) {
-        debugPrint("Transcription API Error (${e.statusCode}): ${e.message}");
-      }
-      return null;
-    }
+  final file = File(filePath);
+  if (!await file.exists()) {
+   debugPrint("Error: Audio file not found for transcription: $filePath");
+   return null;
   }
-
+  debugPrint("Transcribing with model: $actualTranscriptionModel");
+  try {
+   OpenAIAudioModel transcription = await OpenAI.instance.audio.createTranscription(
+    file: file,
+    model: actualTranscriptionModel,
+    responseFormat: OpenAIAudioResponseFormat.json, // or text if preferred
+   );
+   debugPrint("Transcription successful: ${transcription.text}");
+   return transcription.text;
+  } catch (e) {
+   debugPrint("Error transcribing audio: $e");
+   return null;
+  }
+ }
   // --- Other OpenAI SDK Interactions ---
 
   // List Models (via SDK)

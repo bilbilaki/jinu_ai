@@ -141,6 +141,18 @@ class SettingsPage extends ConsumerWidget {
           ),
 
           const SizedBox(height: _sectionSpacing),
+// Padding(
+//             padding: _tilePadding,
+//             child: RadioListTile<ThemeMode>(
+//               title: const Text('Fantasy Theme'),
+//               value: ThemeMode.values[3],
+//               groupValue: settings.themeMode,
+//               onChanged:
+//                   (value) =>
+//                       settingsService.setThemeMode(value ?? ThemeMode.values[3]),
+//             ),
+//           ),
+//           const SizedBox(height: _sectionSpacing),
 
           // --- Generation Parameters ---
           _buildSectionTitle(context, 'Generation Parameters'),
