@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart'; // For kIsWeb
-import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:jinu/data/models/file_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -296,24 +295,24 @@ class FileService {
 
   /// Saves an image file to the device's photo gallery.
   /// Requires image_gallery_saver package (optional).
-   Future<bool> saveImageToGallery(FileModel fileModel) async {
-      if (kIsWeb) {
-          debugPrint("Saving to gallery not applicable on web.");
-          return false;
-      }
-      if (!await requestStoragePermission()) { // Or specific photo add permission if available
-          debugPrint("Storage/Photo permission denied for saving to gallery.");
-          return false;
-      }
-      try {
-          final result = await ImageGallerySaver.saveFile(fileModel.path!);
-          debugPrint("Save image to gallery result: $result");
-          return result['isSuccess'] ?? false;
-      } catch (e) {
-          debugPrint("Error saving image to gallery: $e");
-          return false;
-      }
-  }
+  //  Future<bool> saveImageToGallery(FileModel fileModel) async {
+  //     if (kIsWeb) {
+  //         debugPrint("Saving to gallery not applicable on web.");
+  //         return false;
+  //     }
+  //     if (!await requestStoragePermission()) { // Or specific photo add permission if available
+  //         debugPrint("Storage/Photo permission denied for saving to gallery.");
+  //         return false;
+  //     }
+  //     // try {
+  //     //     final result = await ImageGallerySaver.saveFile(fileModel.path!);
+  //     //     debugPrint("Save image to gallery result: $result");
+  //     //     return result['isSuccess'] ?? false;
+  //     // } catch (e) {
+  //     //     debugPrint("Error saving image to gallery: $e");
+  //     //     return false;
+  //     // }
+  // }
 
 
   // --- Cleanup ---

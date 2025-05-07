@@ -24,11 +24,11 @@ ref.listen(fileService.saveFileToAppDirectory as ProviderListenable<Object>, (_,
 });
 
 
-ref.listen(fileService.saveImageToGallery as ProviderListenable<Object>, (_, next) {
-  if (next == false) {
-    fileService.saveImageToGallery;
-  }
-});
+// ref.listen(fileService.saveImageToGallery as ProviderListenable<Object>, (_, next) {
+//   if (next == false) {
+//     fileService.saveImageToGallery;
+//   }
+// });
 
 
 ref.listen(fileService.getMimeType as ProviderListenable<Object>, (_, next) {

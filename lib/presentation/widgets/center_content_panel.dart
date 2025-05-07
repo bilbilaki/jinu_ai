@@ -1,4 +1,5 @@
 // lib/presentation/widgets/center_content_panel.dart
+import 'dart:async';
 import 'dart:io'; // For File
 
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ import '../providers/history_provider.dart';
 import 'chat_message_widget.dart';
 import 'dynamic_input_field.dart'; // Keep this
 
-// --- Add Web Search Provider ---
+// --- Web Search & Voice Output Providers ---
 final isWebSearchEnabledProvider = StateProvider<bool>(
   (ref) => false,
 ); // Default off
@@ -41,57 +42,59 @@ class _CenterContentPanelState extends ConsumerState<CenterContentPanel> {
     super.dispose();
   }
 
-  // Auto-scroll logic (keep your implementation)
-  void _scrollToBottom([bool jump = false]) {
-    // Check if mounted and controller has clients
+  void _scrollToBottom([bool jump = false, double? specificPosition]) {
     if (!mounted || !_scrollController.hasClients) return;
 
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.position.pixels;
-    // Simplified: Always scroll if near bottom OR jump required
-    final shouldScroll =
-        jump || (maxScroll - currentScroll < 150); // Increased threshold?
+    // Use a small delay to ensure layout is complete, especially for jump scrolls
+    // or when content might be dynamically changing height.
+    Future.delayed(Duration(milliseconds: jump ? 50 : 100), () {
+      if (!mounted || !_scrollController.hasClients) return;
 
-    if (shouldScroll) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _scrollController.hasClients) {
-          // Double-check after callback
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
-    }
+      final maxScroll = _scrollController.position.maxScrollExtent;
+      final currentScroll = _scrollController.position.pixels;
+      final viewportDimension = _scrollController.position.viewportDimension;
+
+      // Scroll if near bottom, or if content doesn't fill viewport, or if jump is requested.
+      // Increased threshold for "near bottom" to 200px.
+      final bool shouldScroll = jump ||
+          (maxScroll - currentScroll < 200) ||
+          (_scrollController.position.extentTotal < viewportDimension);
+
+      if (shouldScroll) {
+        _scrollController.animateTo(
+          specificPosition ?? _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
-  // --- Send Text Message ---
   void _sendTextMessage(String text) {
     final isWebSearchEnabled = ref.read(isWebSearchEnabledProvider);
     final voiceOutputEnabled = ref.read(voiceOutputEnabledProvider);
-    // TODO: Modify ChatController.sendMessage to potentially accept the webSearch flag
-    ref
-        .read(chatControllerProvider.notifier)
-        .sendMessage(
+
+    ref.read(chatControllerProvider.notifier).sendMessage(
           text,
-          isWebSearchEnabled: isWebSearchEnabled, // Pass the value
+          isWebSearchEnabled: isWebSearchEnabled,
           voiceOutputEnabled: voiceOutputEnabled,
         );
     _scrollToBottom(true); // Force jump scroll on sending
   }
 
-  // --- Send File/Image Message ---
   Future<void> _sendFileMessage(File file, ContentType contentType) async {
-    final String fileName = p.basename(file.path); // Get filename from path
+    final String fileName = p.basename(file.path);
     final int fileSize = await file.length();
     final String? mimeType = lookupMimeType(file.path);
 
-    // Create a preliminary User message to display immediately
     final sessionId = ref.read(activeChatSessionProvider)?.id;
     if (sessionId == null) {
       debugPrint("Cannot send file: No active session.");
-      // Show error to user?
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error: No active chat session to send file.")),
+        );
+      }
       return;
     }
 
@@ -99,46 +102,32 @@ class _CenterContentPanelState extends ConsumerState<CenterContentPanel> {
     final userMessage = ChatMessage(
       id: messageId,
       sender: MessageSender.user,
-      // Content could be filename or empty, depending on how you want to display user's upload
-      content:
-          contentType == ContentType.image
-              ? "[Sent Image]"
-              : "[Sent File: $fileName]",
+      content: contentType == ContentType.image
+          ? "[User sent an image: $fileName]"
+          : "[User sent a file: $fileName]",
       timestamp: DateTime.now(),
       contentType: contentType,
-      filePath: file.path, // Store local path for display
+      filePath: file.path,
       fileName: fileName,
       fileSize: fileSize,
       mimeType: mimeType,
     );
 
-    // Add the user message to the local state *immediately*
-    ref.read(activeChatMessagesProvider).add(userMessage);
-    _scrollToBottom(true); // Scroll down after adding user message
+    //ref.read(activeChatMessagesProvider.allTransitiveDependencies)?.addMessage(userMessage);
+    //_scrollToBottom(true);
 
-    // --- Call your ChatController to handle the actual upload/processing ---
-    // Option 1: Upload happens in ChatController
-    // ref.read(chatControllerProvider.notifier).sendFile(file, contentType);
-
-    // Option 2: If ChatController expects structured data
-    // Maybe create a different method?
-    // ref.read(chatControllerProvider.notifier).sendMessageWithAttachment(userMessage);
-
-    // Placeholder: Simulate AI response after a delay (REMOVE THIS IN REAL APP)
-    // Future.delayed(const Duration(seconds: 2), () {
-    //   if (!mounted) return;
-    //   final aiResponse = ChatMessage(
-    //     id: _uuid.v4(),
-    //     sessionId: sessionId,
-    //     sender: MessageSender.ai,
-    //     content: "Received your ${contentType.name}: $fileName",
-    //     timestamp: DateTime.now(),
-    //   );
-    //   ref.read(activeChatMessagesProvider.notifier).addMessage(aiResponse);
-    // });
+    // Actual file sending logic (e.g., upload) should be in ChatController
+    // For now, we assume ChatController handles this when it receives the message
+    // (or create a specific method in ChatController like 'sendFileMessage')
+    ref.read(chatControllerProvider.notifier).sendMessageWithAttachment(userMessage, file);
+    // Or simply:
+    // ref.read(chatControllerProvider.notifier).sendMessage(
+    //   userMessage.content, // or a special type of message
+    //   attachmentPath: file.path,
+    //   attachmentType: contentType,
+    // );
   }
 
-  // --- Send Audio Message ---
   Future<void> _sendAudioMessage(File audioFile) async {
     final String fileName = p.basename(audioFile.path);
     final int fileSize = await audioFile.length();
@@ -147,6 +136,11 @@ class _CenterContentPanelState extends ConsumerState<CenterContentPanel> {
     final sessionId = ref.read(activeChatSessionProvider)?.id;
     if (sessionId == null) {
       debugPrint("Cannot send audio: No active session.");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Error: No active chat session to send audio.")),
+        );
+      }
       return;
     }
 
@@ -154,36 +148,20 @@ class _CenterContentPanelState extends ConsumerState<CenterContentPanel> {
     final userMessage = ChatMessage(
       id: messageId,
       sender: MessageSender.user,
-      content: "[Sent Audio]", // Placeholder text
+      content: "[User sent audio: $fileName]",
       timestamp: DateTime.now(),
       contentType: ContentType.audio,
       filePath: audioFile.path,
       fileName: fileName,
       fileSize: fileSize,
       mimeType: mimeType,
-      // Optionally add duration metadata if easily available from recorder
-      // metadata: {'duration': durationInMillis},
     );
 
-    ref.read(activeChatMessagesProvider).add(userMessage);
+   // ref.read(activeChatMessagesProvider.notifier).addMessage(userMessage);
     _scrollToBottom(true);
 
-    // --- Call ChatController to handle audio ---
-    // ref.read(chatControllerProvider.notifier).sendAudioFile(audioFile);
-    // ref.read(chatControllerProvider.notifier).sendMessageWithAttachment(userMessage);
-
-    // Placeholder AI response (REMOVE)
-    // Future.delayed(const Duration(seconds: 1), () {
-    //   if (!mounted) return;
-    //   final aiResponse = ChatMessage(
-    //     id: _uuid.v4(),
-    //     sessionId: sessionId,
-    //     sender: MessageSender.ai,
-    //     content: "Heard the audio: $fileName",
-    //     timestamp: DateTime.now(),
-    //   );
-    //   ref.read(activeChatMessagesProvider.notifier).addMessage(aiResponse);
-    // });
+    // Similar to _sendFileMessage, delegate actual processing to ChatController
+    ref.read(chatControllerProvider.notifier).sendMessageWithAttachment(userMessage, audioFile);
   }
 
   @override
@@ -192,128 +170,83 @@ class _CenterContentPanelState extends ConsumerState<CenterContentPanel> {
     final currentSession = ref.watch(activeChatSessionProvider);
     final isLoading = ref.watch(isLoadingProvider);
     final chatControllerState = ref.watch(chatControllerProvider);
-    final isWebSearchEnabled = ref.watch(
-      isWebSearchEnabledProvider,
-    ); // Watch web search state
-    final voiceOutputEnabled = ref.watch(
-      voiceOutputEnabledProvider,
-    ); // Watch voice output state
-    // Listen for message changes AND loading state changes to scroll
-    ref.listen(activeChatMessagesProvider, (_, __) => _scrollToBottom());
-    ref.listen(isLoadingProvider, (_, nextIsLoading) {
-      // Scroll more reliably when loading starts/stops causing content shift
-      if (nextIsLoading)
-        _scrollToBottom(true); // Jump scroll when loading starts
-      // Consider scrolling when loading FINISHES as well, in case content jumped
-      // else { _scrollToBottom(); }
-    });
+    final isWebSearchEnabled = ref.watch(isWebSearchEnabledProvider);
+    final voiceOutputEnabled = ref.watch(voiceOutputEnabledProvider);
 
-    // Scroll when the session changes and messages load for the first time
-    ref.listen(activeChatSessionProvider, (_, nextSession) {
-      if (nextSession != null) {
-        // Needs a slight delay for messages to potentially load/render?
-        Future.delayed(
-          const Duration(milliseconds: 100),
-          () => _scrollToBottom(true),
-        );
+    ref.listen<List<ChatMessage>>(activeChatMessagesProvider, (prev, next) {
+      // Scroll when a new message is added, especially if it's from AI or the list was short.
+      if ((prev == null || next.length > prev.length)) {
+           // If the new message is likely an AI response, ensure scroll.
+           // Or if we just sent a message.
+        _scrollToBottom(true); // Use jump scroll for new messages
+      } else {
+        _scrollToBottom(); // Gentle scroll for other updates
       }
     });
 
+    ref.listen<bool>(isLoadingProvider, (_, nextIsLoading) {
+      if (nextIsLoading) {
+        _scrollToBottom(true);
+      } else {
+        // After loading finishes, new content might have appeared.
+        _scrollToBottom(true);
+      }
+    });
+
+    ref.listen<ChatSessionItem?>(activeChatSessionProvider, (_, nextSession) {
+      if (nextSession != null) {
+        // When session changes, messages will repopulate, ensure view is at the bottom.
+        _scrollToBottom(true, 0.0); // Jump to top initially, then scroll to bottom after messages load
+        Future.delayed(const Duration(milliseconds: 200), () => _scrollToBottom(true));
+      }
+    });
     return Container(
-      color: const Color(0xFF202124),
+      color: const Color(0xFF202124), // Dark background for readability
       child: Column(
         children: [
-          // --- Top Bar (Desktop) ---
           if (!widget.isMobileLayout)
             _buildDesktopTopBar(
               context,
-              currentSession?.displayTitle ?? "Chat",
+              currentSession?.displayTitle ?? "New Chat",
             ),
-
-          // --- Web Search Toggle Switch ---
-          // Place it discreetly, maybe above the input field
           Container(
             padding: EdgeInsets.symmetric(
-              horizontal: widget.isMobileLayout ? 10.0 : 36.0,
-              vertical: 2.0, // Small vertical padding
+              horizontal: widget.isMobileLayout ? 12.0 : 36.0,
+              vertical: 6.0,
             ),
             color: const Color(0xFF202124), // Match background
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      'Web Search: ',
-                      style: TextStyle(fontSize: 8, color: Colors.grey[400]),
-                    ),
-                    SizedBox(
-                      height: 12, // Constrain height
-                      child: Switch(
-                        value: isWebSearchEnabled,
-                        onChanged:
-                            isLoading
-                                ? null
-                                : (value) {
-                                  // Disable when loading
-                                  ref
-                                      .read(isWebSearchEnabledProvider.notifier)
-                                      .state = value;
-                                  debugPrint("Web Search: $value");
-                                },
-                        activeColor: Colors.blue[300],
-                        inactiveThumbColor: Colors.grey[600],
-                        inactiveTrackColor: Colors.grey[800],
-                        materialTapTargetSize:
-                            MaterialTapTargetSize
-                                .shrinkWrap, // Smaller tap target
-                      ),
-                    ),
-                  ],
+                _buildToggleSwitch(
+                  label: 'Web Search:',
+                  value: isWebSearchEnabled,
+                  onChanged: isLoading
+                      ? null
+                      : (value) {
+                          ref.read(isWebSearchEnabledProvider.notifier).state = value;
+                          debugPrint("Web Search: $value");
+                        },
                 ),
-                const SizedBox(width: 16), // Add spacing between buttons
-                Row(
-                  children: [
-                    Text(
-                      'Voice Mode: ',
-                      style: TextStyle(fontSize: 8, color: Colors.grey[400]),
-                    ),
-                    SizedBox(
-                      height: 12, // Constrain height
-                      child: Switch(
-                        value: voiceOutputEnabled,
-                        onChanged:
-                            isLoading
-                                ? null
-                                : (value) {
-                                  // Disable when loading
-                                  ref
-                                      .read(voiceOutputEnabledProvider.notifier)
-                                      .state = value;
-                                      
-                                  debugPrint("Voice Mode: $value");
-                                },
-                        activeColor: Colors.blue[300],
-                        inactiveThumbColor: Colors.grey[600],
-                        inactiveTrackColor: Colors.grey[800],
-                        materialTapTargetSize:
-                            MaterialTapTargetSize
-                                .shrinkWrap, // Smaller tap target
-                      ),
-                    ),
-                  ],
+                const SizedBox(width: 16),
+                _buildToggleSwitch(
+                  label: 'Voice Mode:',
+                  value: voiceOutputEnabled,
+                  onChanged: isLoading
+                      ? null
+                      : (value) {
+                          ref.read(voiceOutputEnabledProvider.notifier).state = value;
+                          debugPrint("Voice Output: $value");
+                        },
                 ),
               ],
             ),
           ),
-
-          // --- Main Chat Area ---
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(
-                horizontal: widget.isMobileLayout ? 16.0 : 48.0,
+                horizontal: widget.isMobileLayout ? 8.0 : 32.0, // Reduced horizontal padding
               ),
-              // Use GestureDetector to dismiss keyboard when tapping chat area
               child: GestureDetector(
                 onTap: () => FocusScope.of(context).unfocus(),
                 child: _buildChatListOrPlaceholder(
@@ -324,45 +257,50 @@ class _CenterContentPanelState extends ConsumerState<CenterContentPanel> {
               ),
             ),
           ),
-
           // --- Loading Indicator and Error Display ---
           if (isLoading)
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 4.0),
+              padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
               child: LinearProgressIndicator(
-                minHeight: 2,
+                minHeight: 3, // Slightly thicker
                 backgroundColor: Colors.transparent,
-                color: Colors.blue,
+                color: Colors.blueAccent, // Brighter color for visibility
               ),
             ),
           chatControllerState.maybeWhen(
-            error:
-                (error, stackTrace) => Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 4.0,
-                  ),
-                  child: Text(
-                    "Error: $error",
-                    style: TextStyle(color: Colors.red[300], fontSize: 12),
-                  ),
+            error: (error, stackTrace) => Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red[900]?.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red[700]!, width: 0.5)
                 ),
+                child: Text(
+                  "Error: $error", // Consider a more user-friendly error message
+                  style: TextStyle(color: Colors.red[200], fontSize: 13),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
             orElse: () => const SizedBox.shrink(),
           ),
-
-          // --- Input Field Area ---
           Padding(
             padding: EdgeInsets.fromLTRB(
-              widget.isMobileLayout ? 12.0 : 48.0,
-              8.0, // Top padding reduced slightly
-              widget.isMobileLayout ? 12.0 : 48.0,
-              16.0,
+              widget.isMobileLayout ? 10.0 : 32.0, // Reduced horizontal padding
+              8.0,
+              widget.isMobileLayout ? 10.0 : 32.0,
+              widget.isMobileLayout ? 12.0 : 20.0, // Ensure enough bottom padding, esp. on mobile
             ),
             child: DynamicInputField(
               isLoading: isLoading,
               onSend: _sendTextMessage,
-              onSendFile: _sendFileMessage, // Wire up file sending
-              onSendAudio: _sendAudioMessage, // Wire up audio sending
+              onSendFile: _sendFileMessage,
+              onSendAudio: _sendAudioMessage,
             ),
           ),
         ],
@@ -370,13 +308,45 @@ class _CenterContentPanelState extends ConsumerState<CenterContentPanel> {
     );
   }
 
-  // --- Desktop Top Bar (Keep existing implementation) ---
+  Widget _buildToggleSwitch({
+    required String label,
+    required bool value,
+    required ValueChanged<bool>? onChanged,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.grey[300]), // Increased font size
+        ),
+        const SizedBox(width: 4),
+        SizedBox(
+          height: 24, // Constrain height for better alignment
+          width: 40, // Explicit width for switch
+          child: Transform.scale( // Make switch slightly smaller for dense UI
+            scale: 0.8,
+            child: Switch(
+              value: value,
+              onChanged:onChanged,
+              activeColor: Colors.blueAccent, // Brighter active color
+              activeTrackColor: Colors.blueAccent.withOpacity(0.5),
+              inactiveThumbColor: Colors.grey[500],
+              inactiveTrackColor: Colors.grey[800],
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildDesktopTopBar(BuildContext context, String title) {
-    // ... (your existing code for the top bar) ...
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 12), // Adjusted padding
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 12), // Adjusted padding
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey[800]!)),
+        color: const Color(0xFF2a2b2f), // Slightly different shade for distinction
+        border: Border(bottom: BorderSide(color: Colors.grey[850]!, width: 1.5)),
       ),
       child: Row(
         children: [
@@ -384,16 +354,38 @@ class _CenterContentPanelState extends ConsumerState<CenterContentPanel> {
             child: Text(
               title,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 17, // Slightly larger
                 fontWeight: FontWeight.w500,
-                color: Colors.grey[300],
+                color: Colors.grey[200], // Brighter text
               ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          // Add top bar actions if needed (Save, Clear, Info etc.)
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
+          _buildTopBarButton(
+            context,
+            icon: Icons.save_alt_outlined,
+            tooltip: 'Save Chat (Not Implemented)',
+            onPressed: () {
+               ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Save chat feature is not yet implemented.'), duration: Duration(seconds: 2)),
+              );
+            },
+          ),
+          const SizedBox(width: 4),
+          _buildTopBarButton(
+            context,
+            icon: Icons.cleaning_services_outlined,
+            tooltip: 'Clear Chat (Not Implemented)',
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Clear chat feature is not yet implemented.'), duration: Duration(seconds: 2)),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+          _buildTopBarButton(
+            context,
+            icon: Icons.settings_outlined,
             tooltip: 'Settings',
             onPressed: () {
               Navigator.push(
@@ -402,82 +394,73 @@ class _CenterContentPanelState extends ConsumerState<CenterContentPanel> {
               );
             },
           ),
-          IconButton(
-            onPressed: () {},
-            icon: Icon(
-              Icons.save_alt_outlined,
-              color: Colors.grey[400],
-              size: 20,
-            ),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: Icon(
-              Icons.cleaning_services_outlined,
-              color: Colors.grey[400],
-              size: 20,
-            ),
-          ),
         ],
       ),
     );
   }
 
-  // --- Chat List or Placeholder (Keep existing implementation) ---
+  Widget _buildTopBarButton(BuildContext context, {required IconData icon, required String tooltip, VoidCallback? onPressed}) {
+    return IconButton(
+      icon: Icon(icon, size: 22, color: Colors.grey[400]),
+      tooltip: tooltip,
+      onPressed: onPressed,
+      splashRadius: 20,
+      visualDensity: VisualDensity.compact,
+    );
+  }
+
   Widget _buildChatListOrPlaceholder(
     BuildContext context,
     List<ChatMessage> messages,
     ChatSessionItem? currentSession,
   ) {
     if (currentSession == null && messages.isEmpty) {
-      return _buildGettingStartedPlaceholder(context);
+      return _buildGettingStartedPlaceholder(context, "No chat selected");
     } else if (messages.isEmpty && currentSession != null) {
-      // Check currentSession exists
-      // Show different message if session is selected but empty
-      return Center(
-        child: Text(
-          "Send a message or file to start...",
-          style: TextStyle(color: Colors.grey[500]),
-        ),
-      );
-    } else if (messages.isEmpty) {
-      // Fallback (shouldn't be easily reachable if first condition is met)
-      return _buildGettingStartedPlaceholder(context);
+      return _buildGettingStartedPlaceholder(context, "Send a message or file to start this chat...");
     } else {
-      // Display chat messages
       return ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.symmetric(vertical: 12.0), // Adjusted padding
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
         itemCount: messages.length,
         itemBuilder: (context, index) {
           final message = messages[index];
-          // Use message.id or a combination as Key for better state preservation
           return ChatMessageWidget(key: ValueKey(message.id), message: message);
         },
       );
     }
   }
 
-  // --- Getting Started Placeholder (Keep existing implementation) ---
-  Widget _buildGettingStartedPlaceholder(BuildContext context) {
-    // ... (your existing code for the placeholder) ...
+  Widget _buildGettingStartedPlaceholder(BuildContext context, String message) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.chat_bubble_outline, size: 60, color: Colors.grey[600]),
-          const SizedBox(height: 20),
-          Text(
-            "Select a chat or start a new one",
-            style: TextStyle(fontSize: 18, color: Colors.grey[500]),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Your conversations will appear here.",
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.chat_rounded, size: 64, color: Colors.grey[700]),
+            const SizedBox(height: 24),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18, color: Colors.grey[400], fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              "Your conversation will appear here. Ask questions, upload files, or record audio.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
+          ],
+        ),
       ),
     );
+  }
+}
+
+// Helper extension method to add messages - ensure your ChatMessageNotifier has this
+extension ChatMessageNotifierExtension on StateController<List<ChatMessage>> {
+  void addMessage(ChatMessage message) {
+    state = [...state, message];
   }
 }

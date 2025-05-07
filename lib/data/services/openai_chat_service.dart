@@ -3,11 +3,9 @@ import 'dart:convert';
 import 'dart:io'; // Keep for audio/image file handling if needed
 import 'package:dart_openai/dart_openai.dart'; // Make sure this is configured
 import 'package:flutter/foundation.dart';
-import 'package:jinu/data/models/memory_item.dart';
 import 'package:jinu/presentation/providers/settings_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:jinu/data/services/long_term_memory_service.dart';
 import 'package:jinu/presentation/providers/memory_provider.dart';
 import 'package:uuid/uuid.dart';
 import '../models/chat_message.dart'; // Adjust import path
