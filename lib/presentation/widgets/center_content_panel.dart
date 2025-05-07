@@ -10,19 +10,21 @@ import 'package:jinu/presentation/screens/settings_page.dart'; // Keep settings
 import 'package:mime/mime.dart'; // For getting MIME type
 import 'package:path/path.dart' as p; // For getting basename (filename)
 import 'package:uuid/uuid.dart'; // For generating message IDs
-
+import 'package:jinu/presentation/providers/workspace_mode_provider.dart';
 import '../providers/chat_providers.dart';
 import '../providers/history_provider.dart';
 import 'chat_message_widget.dart';
 import 'dynamic_input_field.dart'; // Keep this
 
 // --- Web Search & Voice Output Providers ---
-final isWebSearchEnabledProvider = StateProvider<bool>(
-  (ref) => false,
-); // Default off
-final voiceOutputEnabledProvider = StateProvider<bool>(
-  (ref) => false,
-); // Default off
+// Instead of standalone providers, use the AppSettingsNotifier
+final isWebSearchEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(appwmsProvider).isWebSearchModeEnabled;
+});
+
+final voiceOutputEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(appwmsProvider).isVoiceModeEnabled;
+});
 
 class CenterContentPanel extends ConsumerStatefulWidget {
   final bool isMobileLayout;
@@ -224,7 +226,7 @@ class _CenterContentPanelState extends ConsumerState<CenterContentPanel> {
                   onChanged: isLoading
                       ? null
                       : (value) {
-                          ref.read(isWebSearchEnabledProvider.notifier).state = value;
+ref.read(appwmsProvider.notifier).toggleWebSearchMode(value);
                           debugPrint("Web Search: $value");
                         },
                 ),
@@ -235,7 +237,7 @@ class _CenterContentPanelState extends ConsumerState<CenterContentPanel> {
                   onChanged: isLoading
                       ? null
                       : (value) {
-                          ref.read(voiceOutputEnabledProvider.notifier).state = value;
+ref.read(appwmsProvider.notifier).toggleVoiceMode(value);
                           debugPrint("Voice Output: $value");
                         },
                 ),
@@ -313,6 +315,8 @@ class _CenterContentPanelState extends ConsumerState<CenterContentPanel> {
     required bool value,
     required ValueChanged<bool>? onChanged,
   }) {
+    // final isWebSearchEnabled = ref.watch(isWebSearchEnabledProvider);
+    // final voiceOutputEnabled = ref.watch(voiceOutputEnabledProvider);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

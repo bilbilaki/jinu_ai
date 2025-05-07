@@ -261,26 +261,18 @@ class FileService {
           if (Platform.isAndroid) {
               directory = await getExternalStorageDirectory(); // Or getApplicationDocumentsDirectory()
               // Creating a specific subfolder might be good practice
-              if (directory != null) {
-                  directory = Directory('${directory.path}/MyAppFiles');
-                  if (!await directory.exists()) {
-                      await directory.create(recursive: true);
-                  }
-              }
-          } else if (Platform.isIOS || Platform.isMacOS) {
+                directory = Directory('${directory!.path}/MyAppFiles');
+                if (!await directory.exists()) {
+                    await directory.create(recursive: true);
+                }
+                      } else if (Platform.isIOS || Platform.isMacOS) {
               directory = await getApplicationDocumentsDirectory();
           } else {
               directory = await getDownloadsDirectory(); // Best guess for Desktop Linux/Windows
           }
 
 
-          if (directory == null) {
-              debugPrint("Could not determine save directory.");
-              return null;
-          }
-
-
-          final String savePath = '${directory.path}/$desiredName';
+          final String savePath = '${directory!.path}/$desiredName';
           await fileModel.file.copy(savePath);
           debugPrint("File saved to: $savePath");
           return savePath;

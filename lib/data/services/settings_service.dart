@@ -24,6 +24,7 @@ class SettingsService with ChangeNotifier {
 
   // Instance variables with default values
   String _custoombaseurl = '';
+  String _geminitoken = '';
   String _setdefaultvoice = 'shimmer';
   String _defaultchatmodel = 'gpt-4.1-nano';
   String _apitokenmain = '';
@@ -32,6 +33,7 @@ class SettingsService with ChangeNotifier {
   String _setapisdkbaseurl = '';
   String _usagemode = 'normal';
   bool _turnofftools = false;
+  bool _useaistudiotoken = false;
   Map<String, dynamic> _getmodels = {}; // Holds raw response from getModels()
   List<String> _availableModels = []; // Holds just the IDs from getModels()
   String _textprocessingmodel = 'gpt-4.1-nano';
@@ -69,6 +71,8 @@ class SettingsService with ChangeNotifier {
   int get messageBufferSize => _messageBufferSize;
   ThemeMode get themeMode => _themeMode;
   String get custoombaseurl => _custoombaseurl;
+    String get geminitoken => _geminitoken;
+
   String get setdefaultvoice => _setdefaultvoice;
   String get defaultchatmodel => _defaultchatmodel;
   String get apitokenmain => _apitokenmain;
@@ -77,6 +81,7 @@ class SettingsService with ChangeNotifier {
   String get setapisdkbaseurl => _setapisdkbaseurl;
   String get usagemode => _usagemode;
   bool get turnofftools => _turnofftools;
+  bool get useaistudiotoken => _useaistudiotoken;
   @Deprecated(
     'Use availableModels getter for IDs or getModelDetails for full data',
   )
@@ -143,6 +148,7 @@ class SettingsService with ChangeNotifier {
 
     // Load other individual settings using variable names as keys (as per original code)
     _custoombaseurl = _prefs!.getString('custoombaseurl') ?? '';
+    _geminitoken = _prefs!.getString('geminitoken') ?? '';
     _defaultchatmodel = _prefs!.getString('defaultchatmodel') ?? 'gpt-4.1-nano';
     _apitokenmain = _prefs!.getString('apitokenmain') ?? '';
     _apitokensub = _prefs!.getString('apitokensub') ?? '';
@@ -153,7 +159,8 @@ class SettingsService with ChangeNotifier {
     _usagemode = _prefs!.getString('usagemode') ?? 'normal';
     _turnofftools =
         _prefs!.getBool('turnofftools') ?? false; // Use string key for bool
-
+_useaistudiotoken =
+        _prefs!.getBool('useaistudiotoken') ?? false;
     // Load models fetched previously (both raw data and just IDs)
     _getmodels =
         (_prefs!.getString('modelsData') != null)
@@ -223,7 +230,7 @@ class SettingsService with ChangeNotifier {
       notifyListeners();
       return; // Exit early
     }
-    if (!Uri.tryParse(custoombaseurl)!.hasAbsolutePath ?? true) {
+    if (!Uri.tryParse(custoombaseurl)!.hasAbsolutePath) {
       debugPrint("Cannot fetch models: Invalid Base URL format.");
       _availableModels = [];
       _getmodels = {'error': 'Invalid Base URL format'};
@@ -336,6 +343,9 @@ class SettingsService with ChangeNotifier {
       case 'custoombaseurl':
         _custoombaseurl = newValue;
         break;
+        case 'geminitoken':
+        _geminitoken = newValue;
+        break;
       case 'defaultchatmodel':
         _defaultchatmodel = newValue;
         break;
@@ -434,6 +444,9 @@ class SettingsService with ChangeNotifier {
     switch (key) {
       case 'turnofftools':
         _turnofftools = newValue;
+        break;
+        case 'useaistudiotoken':
+        _useaistudiotoken = newValue;
         break;
       case 'autotitle':
         _autotitle = newValue;
@@ -550,6 +563,8 @@ class SettingsService with ChangeNotifier {
   // Specific Setters using the generic helpers
   Future<void> setCustoombaseurl(String value) =>
       _setString('custoombaseurl', value, _custoombaseurl);
+      Future<void> setGeminitoken(String value) =>
+      _setString('geminitoken', value, _geminitoken);
   Future<void> setDefaultchatmodel(String value) =>
       _setString('defaultchatmodel', value, _defaultchatmodel);
   Future<void> setApitokenmain(String value) =>
@@ -567,6 +582,8 @@ class SettingsService with ChangeNotifier {
       _setString('usagemode', value, _usagemode);
   Future<void> setTurnofftools(bool value) =>
       _setBool('turnofftools', value, _turnofftools);
+      Future<void> setUseaistudiotoken(bool value) =>
+      _setBool('useaistudiotoken', value, _useaistudiotoken);
   // setGetmodels is not needed, it's populated by getModels()
   Future<void> setTextprocessingmodel(String value) =>
       _setString('textprocessingmodel', value, _textprocessingmodel);
@@ -681,6 +698,8 @@ class SettingsService with ChangeNotifier {
       // Other Settings (Using variable names mostly)
       case 'custoombaseurl':
         return _custoombaseurl;
+        case 'geminitoken':
+        return _geminitoken;
       case 'setdefaultvoice':
         return _setdefaultvoice;
       case 'defaultchatmodel':
@@ -692,12 +711,13 @@ class SettingsService with ChangeNotifier {
       case 'setapisdkmodel':
         return _setapisdkmodel;
       case 'setapisdkbaseurl':
-      case settingsCustomBaseUrlKey:
         return _setapisdkbaseurl; // Handles both
       case 'usagemode':
         return _usagemode;
       case 'turnofftools':
         return _turnofftools;
+        case 'useaistudiotoken':
+        return _useaistudiotoken;
       case 'getmodels':
         return _getmodels;
       case 'availableModels':
@@ -770,6 +790,8 @@ class SettingsService with ChangeNotifier {
     _messageBufferSize = 7;
     _themeMode = ThemeMode.system;
     _custoombaseurl = '';
+    _geminitoken = '';
+    _useaistudiotoken = false;
     _setdefaultvoice = 'shimmer';
     _defaultchatmodel = 'gpt-4.1-nano';
     _apitokenmain = '';
@@ -817,6 +839,8 @@ class SettingsService with ChangeNotifier {
     await _prefs?.remove(geminiMessageBufferSizeKey);
     await _prefs?.remove(appThemeModeKey);
     await _prefs?.remove('custoombaseurl');
+    await _prefs?.remove('geminitoken');
+    await _prefs?.remove('useaistudiotoken');
     await _prefs?.remove('defaultchatmodel');
     await _prefs?.remove('apitokenmain');
     await _prefs?.remove('apitokensub');

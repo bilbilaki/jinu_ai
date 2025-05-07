@@ -9,6 +9,7 @@ import '../../data/services/file_service.dart';
 final fileServiceProvider = Provider<FileService>((ref) {
   final fileService = FileService();
 
+
   
 
 ref.listen(fileService.cancelRecording as ProviderListenable<Object>, (_, next) {
@@ -46,24 +47,28 @@ ref.listen(fileService.getMimeType as ProviderListenable<Object>, (_, next) {
 
   
   ref.listen(fileService.startRecording as ProviderListenable<Object>, (_, next) {
+    fileService.requestMicrophonePermission();
     if (next == false) {
       fileService.startRecording();
     }
   });
 
   ref.listen(fileService.pickFile as ProviderListenable<Object>, (_, next) {
+    fileService.requestStoragePermission();
     if (next == false) {
       fileService.pickFile();
     }
   });
 
   ref.listen(fileService.pickImageFromGallery as ProviderListenable<Object>, (_, next) {
+    fileService.requestCameraPermission();
     if (next == false) {
       fileService.pickImageFromGallery();
     }
   });
 
   ref.listen(fileService.takePhotoWithCamera as ProviderListenable<Object>, (_, next) {
+    fileService.requestCameraPermission();
     if (next == false) {
       fileService.takePhotoWithCamera();
     }
@@ -78,6 +83,11 @@ ref.listen(fileService.getMimeType as ProviderListenable<Object>, (_, next) {
   ref.listen(fileService.requestCameraPermission as ProviderListenable<Object>, (_, next) {
     if (next == false) {
       fileService.requestCameraPermission();
+    }
+  });
+   ref.listen(fileService.requestMicrophonePermission as ProviderListenable<Object>, (_, next) {
+    if (next == false) {
+      fileService.requestMicrophonePermission();
     }
   });
 

@@ -8,11 +8,26 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jinu/data/models/chat_message.dart'; // For ContentType
 import 'package:jinu/presentation/providers/file_service_provider.dart';
-import 'package:jinu/data/models/file_model.dart';// FileModel likely from your project
+import 'package:jinu/data/models/file_model.dart';
+import 'package:jinu/presentation/providers/workspace_mode_provider.dart';// FileModel likely from your project
 
 typedef SendFileCallback = void Function(File file, ContentType type);
 typedef SendAudioCallback = void Function(File audioFile);
+final isWebSearchEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(appwmsProvider).isWebSearchModeEnabled;
+});
 
+final voiceOutputEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(appwmsProvider).isVoiceModeEnabled;
+});
+final itHasImageProvider = Provider<bool>((ref) {
+  return ref.watch(appwmsProvider).isContentIncludeImageMode;
+});
+
+final itHasVoiceProvider = Provider<bool>((ref) {
+  return ref.watch(appwmsProvider).isContentIncludeVoiceMode;
+});
+ bool value = true;
 class DynamicInputField extends ConsumerStatefulWidget {
   final bool isLoading;
   final Function(String) onSend;
@@ -36,6 +51,7 @@ enum _PickSource { gallery, camera, fileStorage }
 class _DynamicInputFieldState extends ConsumerState<DynamicInputField> {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  
   bool _showSendButton = false;
 
   bool _isRecording = false;
@@ -106,6 +122,14 @@ class _DynamicInputFieldState extends ConsumerState<DynamicInputField> {
 
 
   Future<void> _handleFileUpload() async {
+    final isWebSearchEnabled = ref.watch(appwmsProvider).isWebSearchModeEnabled;
+
+
+final voiceOutputEnabled = ref.watch(appwmsProvider).isVoiceModeEnabled;
+final itHasImage = ref.watch(appwmsProvider).isContentIncludeImageMode;
+
+
+final itHasVoice = ref.watch(appwmsProvider).isContentIncludeVoiceMode;
     if (widget.isLoading || _isRecording) return;
 
     // Dismiss keyboard before showing bottom sheet
@@ -125,12 +149,24 @@ class _DynamicInputFieldState extends ConsumerState<DynamicInputField> {
               _buildFileUploadOption(
                 icon: Icons.photo_library_outlined,
                 text: 'Pick Image from Gallery',
-                onTap: () => _pickFileAndSend(_PickSource.gallery),
-              ),
+                onTap: () { 
+                  
+ref.read(appwmsProvider.notifier).toggleContentIncludeImageeMode(value);
+                          debugPrint("Web Search: $value");
+                       
+                  _pickFileAndSend(_PickSource.gallery);
+  
+  
+  }),
               _buildFileUploadOption(
                 icon: Icons.camera_alt_outlined,
                 text: 'Take Photo with Camera',
-                onTap: () => _pickFileAndSend(_PickSource.camera),
+                onTap: () { 
+                  
+ref.read(appwmsProvider.notifier).toggleContentIncludeImageeMode(value);
+                          debugPrint("Web Search: $value");
+                        _pickFileAndSend(_PickSource.camera);
+                }
               ),
               _buildFileUploadOption(
                 icon: Icons.attach_file_outlined,
@@ -161,6 +197,7 @@ class _DynamicInputFieldState extends ConsumerState<DynamicInputField> {
     if (widget.isLoading) return; // Double check loading state
 
     final fileService = ref.read(fileServiceProvider);
+
     File? pickedFile;
     ContentType contentType = ContentType.file; // Default
 
@@ -169,7 +206,7 @@ class _DynamicInputFieldState extends ConsumerState<DynamicInputField> {
         case _PickSource.gallery:
           final fileModel = await fileService.pickImageFromGallery();
           pickedFile = fileModel?.file;
-          if (pickedFile != null) contentType = ContentType.image;
+          contentType = ContentType.image;
           break;
         case _PickSource.camera:
 final fileModel = await fileService.pickImageFromGallery();
@@ -180,8 +217,9 @@ final fileModel = await fileService.pickFile();
           if (pickedFile != null) {
             final mime = fileService.getMimeType(pickedFile.path);
             if (mime != null) {
-              if (mime.startsWith('image/')) contentType = ContentType.image;
-              else if (mime.startsWith('audio/')) contentType = ContentType.audio;
+              if (mime.startsWith('image/')) {
+                contentType = ContentType.image;
+              } else if (mime.startsWith('audio/')) contentType = ContentType.audio;
               // else keep ContentType.file
             }
           }
@@ -271,6 +309,11 @@ final fileModel = await fileService.pickFile();
       }
 
       if (audioFileModel != null) {
+      
+                  
+ref.read(appwmsProvider.notifier).toggleContentIncludeVoiceMode(value);
+                          debugPrint("Web Search: $value");
+                       
         widget.onSendAudio(audioFileModel.file);
       } else if (mounted) {
         scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Recording captured no audio or failed.')));

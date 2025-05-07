@@ -6,19 +6,31 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart'; // Audio player
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_highlight/themes/monokai-sublime.dart';
+import 'package:flutter_highlight/themes/xcode.dart';
+import 'package:flutter_highlight/themes/github.dart';
+
+
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jinu/presentation/providers/file_service_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:highlight/languages/shell.dart';
+import 'package:highlight/languages/go.dart';
+import 'package:highlight/languages/java.dart';
+import 'package:highlight/languages/python.dart';
+import 'package:highlight/languages/dart.dart';
+import 'package:flutter_code_editor/flutter_code_editor.dart';
 // import 'package:intl/intl.dart'; // For date formatting if needed
 
 import '../../data/models/chat_message.dart';
 import '../../data/models/file_model.dart'; // For FileModel if used by fileService
-
 class ChatMessageWidget extends ConsumerStatefulWidget {
   final ChatMessage message;
 
+
   const ChatMessageWidget({super.key, required this.message});
+  
 
   @override
   ConsumerState<ChatMessageWidget> createState() => _ChatMessageWidgetState();
@@ -176,13 +188,13 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> {
 
     File? sourceFile;
 
-    if (sourcePath != null && sourcePath.isNotEmpty) {
+    if (sourcePath!.isNotEmpty) {
       sourceFile = File(sourcePath);
       if (!await sourceFile.exists()) {
         scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Error: Local file not found.')));
         return;
       }
-    } else if (sourceUrl != null && sourceUrl.isNotEmpty) {
+    } else if (sourceUrl!.isNotEmpty) {
       // Implement download from URL then save
       // This is a more complex operation usually involving http package and progress indication
       scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Downloading from URL and saving is not yet fully implemented.')));
@@ -200,11 +212,6 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> {
       return;
     }
 
-    if (sourceFile == null) { // Should have been caught above, but as a safeguard
-         scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Error: File source is null.')));
-         return;
-    }
-
     try {
       String? savedPath;
       if (widget.message.contentType == ContentType.image && (Platform.isAndroid || Platform.isIOS)) {
@@ -215,12 +222,8 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> {
         savedPath = await fileService.saveFileToAppDirectory(FileModel.fromFile(sourceFile), defaultFileName);
       }
 
-      if (savedPath != null) {
-        scaffoldMessenger.showSnackBar(SnackBar(content: Text('File saved to $savedPath')));
-      } else {
-        scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Failed to save file.')));
-      }
-    } catch (e) {
+      scaffoldMessenger.showSnackBar(SnackBar(content: Text('File saved to $savedPath')));
+        } catch (e) {
       debugPrint("Error saving file: $e");
       scaffoldMessenger.showSnackBar(SnackBar(content: Text('Error saving file: $e')));
     }
@@ -318,7 +321,7 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> {
     final isSystemError = message.sender == MessageSender.system && message.metadata?['error'] == true;
 
     // No action buttons for user messages or system errors for now
-    if (isUser || isSystemError) return const SizedBox.shrink();
+   // if (isUser || isSystemError) return const SizedBox.shrink();
 
     bool canSave = message.isFileBased && (message.filePath != null || message.fileUrl != null);
     bool canCopy = message.content.isNotEmpty;
@@ -368,8 +371,7 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> {
       case ContentType.file:
         return _buildFilePlaceholderContent(context, widget.message, textColor);
       case ContentType.text:
-      default:
-        return _buildTextContent(context, widget.message, textColor);
+      return _buildTextContent(context, widget.message, textColor);
     }
   }
 
@@ -377,10 +379,33 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> {
     if (message.content.trim().isEmpty) {
       return const SizedBox.shrink();
     }
+    final controller = CodeController(
+  text: (_isLikelyCode(message.content)).toString(), // Initial code
+
+);
+controller.setLanguage(dart, analyzer: DefaultLocalAnalyzer());
+controller.setLanguage(python, analyzer: DefaultLocalAnalyzer());
+controller.setLanguage(shell, analyzer: DefaultLocalAnalyzer());
+
+
     final bool isCodeDominant = _isLikelyCode(message.content);
      final bool isDarkTheme = Theme.of(context).brightness == Brightness.dark;
+if(isCodeDominant == true) {
+return MaterialApp(
+      home: Scaffold(
+        body: CodeTheme(
+          data: CodeThemeData(styles: githubTheme),
+          child: SingleChildScrollView(
+            child: CodeField(
+              controller: controller,
+            ),
+          ),
+        ),
+      ),
+    );
+}
 
-
+   else {
     return MarkdownBody(
       data: message.content,
       selectable: true,
@@ -418,7 +443,7 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> {
       ),
       // syntaxHighlighter: DartSyntaxHighlighter(SyntaxTheme.dracula()), // Example if using a highlighter
     );
-  }
+  }}
 
   Widget _buildImageContent(BuildContext context, ChatMessage message, Color textColor) {
     Widget imageDisplayWidget;
@@ -427,7 +452,7 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> {
     bool hasLocalFile = imageFile != null && imageFile.existsSync();
 
     if (hasLocalFile) {
-      imageDisplayWidget = Image.file(imageFile!, fit: BoxFit.contain,
+      imageDisplayWidget = Image.file(imageFile, fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) => _buildMediaErrorPlaceholder(Icons.broken_image_outlined, "Cannot display image")
       );
     } else if (imageUrl != null && imageUrl.isNotEmpty) {

@@ -128,7 +128,7 @@ class AppThemes {
     ),
     iconTheme: IconThemeData(color: Colors.grey[400]),
     dividerColor: Colors.grey[800],
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 0.5,
       color: const Color(0xFF232529), // Consistent with surface
       shape: RoundedRectangleBorder(
@@ -156,7 +156,7 @@ class AppThemes {
       secondarySelectedColor: Colors.white, // Text color when selected
       secondaryLabelStyle: GoogleFonts.inter(fontSize: 13, color: Colors.white),
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: const Color(0xFF232529),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       titleTextStyle: GoogleFonts.inter(fontSize: 18, color: Colors.grey[100], fontWeight: FontWeight.w600),
@@ -169,7 +169,7 @@ class AppThemes {
       selectedLabelStyle: GoogleFonts.inter(fontWeight: FontWeight.w600),
       unselectedLabelStyle: GoogleFonts.inter(),
     ),
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       labelColor:const Color(0xFF8C61FF),
       unselectedLabelColor: Colors.grey[400],
       indicatorColor: const Color(0xFF8C61FF),
@@ -276,7 +276,7 @@ class AppThemes {
     ),
     iconTheme: IconThemeData(color: Colors.grey[600]),
     dividerColor: Colors.grey[300],
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 0.5,
       color: Colors.white,
       shape: RoundedRectangleBorder(
@@ -305,7 +305,7 @@ class AppThemes {
       secondaryLabelStyle: GoogleFonts.lato(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
 
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       titleTextStyle: GoogleFonts.lato(fontSize: 18, color: Colors.grey[900], fontWeight: FontWeight.w600),
@@ -318,7 +318,7 @@ class AppThemes {
       selectedLabelStyle: GoogleFonts.lato(fontWeight: FontWeight.w700),
       unselectedLabelStyle: GoogleFonts.lato(),
     ),
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       labelColor: const Color(0xFF6A11CB),
       unselectedLabelColor: Colors.grey[600],
       indicatorColor: const Color(0xFF6A11CB),
@@ -439,7 +439,7 @@ class AppThemes {
     iconTheme: IconThemeData(color: const Color(0xFF00E5FF).withOpacity(0.85)), // Cyan default icons
     dividerColor: const Color(0xFFE040FB).withOpacity(0.25),
 
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       elevation: 1,
       color: const Color(0xFF2E1C41), // Consistent with surface
       shape: RoundedRectangleBorder(
@@ -469,7 +469,7 @@ class AppThemes {
       secondarySelectedColor: Colors.black, // Text color when selected
       secondaryLabelStyle: GoogleFonts.cinzel(fontSize: 13, color: Colors.black, fontWeight: FontWeight.bold),
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       backgroundColor: const Color(0xFF2E1C41),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -486,7 +486,7 @@ class AppThemes {
       unselectedLabelStyle: GoogleFonts.cinzel(),
       elevation: 8,
     ),
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       labelColor: const Color(0xFF00E5FF),
       unselectedLabelColor: const Color(0xFFE040FB).withOpacity(0.7),
       indicator: UnderlineTabIndicator(

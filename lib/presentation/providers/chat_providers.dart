@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart'; // For debugPrint
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jinu/data/services/chat_history_service.dart';
 import 'package:jinu/presentation/providers/memory_provider.dart';
+import 'package:jinu/presentation/providers/workspace_mode_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'api_providers.dart';
 import 'history_provider.dart';
@@ -19,12 +19,21 @@ const uuid = Uuid();
 
 // Provider to indicate if the AI is currently processing a message
 final isLoadingProvider = StateProvider<bool>((ref) => false);
-final isWebSearchEnabledProvider = StateProvider<bool>(
-  (ref) => false,
-); // From center_content_panel
-final voiceOutputEnabledProvider = StateProvider<bool>(
-  (ref) => false,
-); // From center_content_panel
+final isWebSearchEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(appwmsProvider).isWebSearchModeEnabled;
+});
+
+final voiceOutputEnabledProvider = Provider<bool>((ref) {
+  return ref.watch(appwmsProvider).isVoiceModeEnabled;
+});
+final itHasImageProvider = Provider<bool>((ref) {
+  return ref.watch(appwmsProvider).isContentIncludeImageMode;
+});
+
+final itHasVoiceProvider = Provider<bool>((ref) {
+  return ref.watch(appwmsProvider).isContentIncludeVoiceMode;
+});
+
 final newTtsFileProvider = StateProvider<File?>(
   (ref) => null,
 ); // For UI to pick up new TTS audio
@@ -58,9 +67,14 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
     File attachmentFile,
   ) async {
     // Read current toggle states for web search and voice output
-    final isWebSearchEnabled = ref.read(isWebSearchEnabledProvider);
-    final voiceOutputEnabled = ref.read(voiceOutputEnabledProvider);
+final isWebSearchEnabled = ref.watch(appwmsProvider).isWebSearchModeEnabled;
 
+
+final voiceOutputEnabled = ref.watch(appwmsProvider).isVoiceModeEnabled;
+final itHasImage = ref.watch(appwmsProvider).isContentIncludeImageMode;
+
+
+final itHasVoice = ref.watch(appwmsProvider).isContentIncludeVoiceMode;
     // Determine attachment content type (this should ideally come from userMessagePlaceholder or be detected)
     // For simplicity, let's assume userMessagePlaceholder.contentType is correctly set by caller
     ContentType attachmentContentType = userMessagePlaceholder.contentType;
@@ -122,14 +136,8 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
       // 1. Get Active Chat or Start New One
       String? currentSessionId = historyService.activeChatId;
       ChatSessionItem? currentSession;
-      if (currentSessionId == null) {
-        debugPrint("No active session found. Starting new chat.");
-        currentSession = historyService.startNewChat();
-        currentSessionId = currentSession.id;
-      } else {
-        currentSession = historyService.getSessionById(currentSessionId);
-      }
-      final historyEnabled = settings.historychatenabled;
+      currentSession = historyService.getSessionById(currentSessionId!);
+          final historyEnabled = settings.historychatenabled;
       final String modelToUse;
       if (imageFile != null) {
         // Use vision model from settings (e.g., "gpt-4o-mini")
@@ -142,20 +150,15 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
         // Use web search model from settings (e.g., "gpt-4o-mini-search-preview")
         modelToUse = "gpt-4o-mini-search-preview"; // fallback
         debugPrint("Web Search Enabled: Using web search model $modelToUse");
-      } else {
+
+      }
+       else {
         modelToUse = settings.defaultchatmodel;
         debugPrint("Standard Chat: Using model $modelToUse");
       }
 
       if (historyEnabled) {
-        currentSession = historyService.getSessionById(currentSessionId!);
-        if (currentSession == null) {
-          debugPrint(
-            "Active session ID $currentSessionId not found in history. Starting new chat.",
-          );
-          currentSession = historyService.startNewChat();
-          currentSessionId = currentSession.id;
-        }
+        currentSession = historyService.getSessionById(currentSessionId);
       } else {
         // History is disabled - operate on a temporary in-memory session
         // For simplicity here, we'll just prevent sending if history disabled.
@@ -192,7 +195,7 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
       }
 
       final bool isFirstUserMessage =
-          currentSession?.messages
+          currentSession!.messages
               .where((m) => m.sender == MessageSender.user)
               .length ==
           1;
@@ -283,7 +286,7 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
 
       // 3. Add Chat History (respecting buffer)
       List<ChatMessage> historyMessages =
-          currentSession!.messages; // Get all messages (incl. user's new one)
+          currentSession.messages; // Get all messages (incl. user's new one)
       if (settings.historybufferlength > 0 &&
           historyMessages.length > settings.historybufferlength) {
         messagesForApi.addAll(
@@ -387,22 +390,22 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
           // Handle displaying AI message if history is off (e.g., temporary list)
         }
 
-        if (ref.read(voiceOutputEnabledProvider)) {
-          try {
-            final ttsFileName =
-                "ai_response_${DateTime.now().millisecondsSinceEpoch}";
-            final ttsAudioFile = await chatService.createAudioSpeech(
-              textContent: aiContent,
-              filename: ttsFileName,
-              // ttsModel and voice will be taken from service defaults or settings
-            );
-            if (ttsAudioFile != null) {
-              ref.read(newTtsFileProvider.notifier).state = ttsAudioFile;
-            }
-          } catch (e) {
-            debugPrint("Error generating TTS for AI response: $e");
-          }
-        }
+        // if (ref.read(voiceOutputEnabledProvider)) {
+        //   try {
+        //     final ttsFileName =
+        //         "ai_response_${DateTime.now().millisecondsSinceEpoch}";
+        //     final ttsAudioFile = await chatService.createAudioSpeech(
+        //       textContent: aiContent,
+        //       filename: ttsFileName,
+        //       // ttsModel and voice will be taken from service defaults or settings
+        //     );
+        //     if (ttsAudioFile != null) {
+        //       ref.read(newTtsFileProvider.notifier).state = ttsAudioFile;
+        //     }
+        //   } catch (e) {
+        //     debugPrint("Error generating TTS for AI response: $e");
+        //   }
+        // }
         // Check if the response contains tool calls
         if (response.choices.first.message.haveToolCalls) {
           try {
@@ -505,7 +508,7 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
 
       try {
         // 1. Add a placeholder message for the audio being processed (optional but good UX)
-        if (currentSessionId != null && settings.historychatenabled) {
+        if (settings.historychatenabled) {
           final audioPlaceholderMsg = ChatMessage(
             sender: MessageSender.user,
             content: "[Processing audio: ${audioFile.path.split('/').last}...]",
@@ -515,7 +518,7 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
             filePath: audioFile.path,
           );
           await historyService.addMessageToSession(
-            currentSessionId,
+            currentSessionId!,
             audioPlaceholderMsg,
           );
         }
@@ -547,7 +550,7 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
         debugPrint("Error in transcribeAndSendAudio: $e\n$s");
         String errorMsg = e.toString().replaceFirst("Exception: ", "");
         state = AsyncError("Audio Processing Error: $errorMsg", s);
-        if (currentSessionId != null && settings.historychatenabled) {
+        if (settings.historychatenabled) {
           final errorMessage = ChatMessage(
             sender: MessageSender.system,
             content: "Error processing audio file: $errorMsg",
@@ -556,7 +559,7 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
           );
           try {
             await historyService.addMessageToSession(
-              currentSessionId,
+              currentSessionId!,
               errorMessage,
             );
           } catch (histErr) {

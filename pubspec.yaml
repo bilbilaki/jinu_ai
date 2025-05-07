@@ -53,8 +53,10 @@ dependencies:
   audioplayers: ^6.4.0
   path: ^1.9.1
   google_fonts: ^6.2.1
-  image_gallery_saver: ^2.0.3
+  image_gallery_saver_plus: any
   device_info_plus: ^11.4.0
+  flutter_code_editor: ^0.3.3
+  highlight: ^0.7.0
 
 dev_dependencies:
   flutter_test:
