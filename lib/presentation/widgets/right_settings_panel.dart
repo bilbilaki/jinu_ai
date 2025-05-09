@@ -16,7 +16,8 @@ class RightSettingsPanel extends ConsumerStatefulWidget {
 class _RightSettingsPanelState extends ConsumerState<RightSettingsPanel> {
   // Local UI state for expansion
   bool _modelParamsExpanded = true; // Start expanded
-  bool _advancedExpanded = false; // Start collapsed
+  bool _advancedExpanded = false;
+  
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +102,7 @@ class _RightSettingsPanelState extends ConsumerState<RightSettingsPanel> {
                         isValidSelection
                             ? currentSelectedModel
                             : (modelIds.isNotEmpty ? modelIds.first : null);
-
+                   
                     // Auto-select the first model if current selection is invalid/empty
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       if (!isValidSelection &&
@@ -134,7 +135,27 @@ class _RightSettingsPanelState extends ConsumerState<RightSettingsPanel> {
                   },
                 ),
                 const SizedBox(height: 20),
-
+              
+//  _buildDropdownSetting<String>(
+//                       ref: ref,
+//                       label: "Gemini-Model",
+//                       value: _getgeminimodelselected, // Use the effective model
+//                       items: geminiModelslist.toString(),
+//                       onSelected: (newValue) async {
+//                         if (newValue != null) {
+//                           ref
+//                               .read(settingsServiceProvider)
+//                               .setDefaultchatmodel(newValue);
+//                           settingsServiceProvider.overrideWith(
+//                             (ref) => settingsService,
+//                           );
+//                         }
+//                       },
+//                       hintWhenEmpty:
+//                           "No models available", // Hint if list is empty
+//                     ),
+            
+//                 const SizedBox(height: 20),
                 // === Generation Parameters Section ===
                 _buildSectionHeader(
                   'Model parameters',
@@ -281,6 +302,24 @@ class _RightSettingsPanelState extends ConsumerState<RightSettingsPanel> {
                           .turnofftools, // Use the setting value (inverted logic)
                   onChanged: (val) {
                     ref.read(settingsServiceProvider).setTurnofftools(val);
+                    settingsServiceProvider.overrideWith(
+                      (ref) => settingsService,
+                    );
+                  },
+                  // Style based on your theme
+                  activeColor: Theme.of(context).colorScheme.primary,
+                ),
+                SwitchListTile(
+                  title: const Text(
+                    'Enable Use AI Studio',
+                  ), // Match label from SettingsPage
+                  dense: true, // Make it more compact
+                  contentPadding: EdgeInsets.zero, // Remove default padding
+                  value:
+                      !settings
+                          .useaistudiotoken, // Use the setting value (inverted logic)
+                  onChanged: (val) {
+                    ref.read(settingsServiceProvider).setUseaistudiotoken(val);
                     settingsServiceProvider.overrideWith(
                       (ref) => settingsService,
                     );

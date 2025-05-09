@@ -233,6 +233,26 @@ class SettingsPage extends ConsumerWidget {
           ),
           const SizedBox(height: _itemSpacing),
           _buildTextFieldSetting(
+            initialValue: settings.geminitoken,
+            label: 'Google Gemini API Token',
+            saveAction: (value) => settingsService.setGeminitoken(value),
+            obscureText: true,
+          ),
+           _buildSectionTitle(context, 'Developer Options'),
+          Padding(
+            padding: _tilePadding,
+            child: SwitchListTile(
+              title: const Text('Enabling AI Studio usage'),
+              subtitle: const Text('If you want switch using API keys to AI Studio '),
+              value: settings.useaistudiotoken,
+              onChanged: (settingsService.setUseaistudiotoken),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+
+          const SizedBox(height: _sectionSpacing * 2), 
+          const SizedBox(height: _itemSpacing),
+          _buildTextFieldSetting(
             initialValue: settings.apitokensub,
             label: 'Secondary API Token (Optional)',
             saveAction: (value) => settingsService.setApitokensub(value),

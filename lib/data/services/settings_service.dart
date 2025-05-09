@@ -36,9 +36,17 @@ class SettingsService with ChangeNotifier {
   bool _useaistudiotoken = false;
   Map<String, dynamic> _getmodels = {}; // Holds raw response from getModels()
   List<String> _availableModels = []; // Holds just the IDs from getModels()
+  Map<String, dynamic> _getgeminimodels = {}; // Holds raw response from getModels()
+  List<String> _availablegeminiModels = [];
   String _textprocessingmodel = 'gpt-4.1-nano';
   String _voiceprocessingmodel = 'tts-1';
   String _visionprocessingmodel = 'gpt-4.1-nano';
+    String _defaultgeminichatmodel = 'gemini-2.0-flash-lite';
+
+  String _geminitextprocessingmodel = 'gemini-2.0-flash-lite';
+  String _geminivisionprocessingmodel = 'gemini-2.0-flash-lite';
+  String _geminivoiceprocessingmodel = 'gemini-2.0-flash-lite';
+  //String _visionprocessingmodel = 'gpt-4.1-nano';
   bool _autotitle = true; // Default from original
   String _autotitlemodel = ''; // Needs a default? e.g., 'gpt-3.5-turbo-0125'
   bool _historyformodelsenabled = true;
@@ -72,8 +80,8 @@ class SettingsService with ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
   String get custoombaseurl => _custoombaseurl;
     String get geminitoken => _geminitoken;
-
-  String get setdefaultvoice => _setdefaultvoice;
+String get setdefaultvoice => _setdefaultvoice;
+  String get defaulgeminitchatmodel => _defaultgeminichatmodel;
   String get defaultchatmodel => _defaultchatmodel;
   String get apitokenmain => _apitokenmain;
   String get apitokensub => _apitokensub;
@@ -90,6 +98,10 @@ class SettingsService with ChangeNotifier {
   String get textprocessingmodel => _textprocessingmodel;
   String get voiceprocessingmodel => _voiceprocessingmodel;
   String get visionprocessingmodel => _visionprocessingmodel;
+    String get geminitextprocessingmodel => _geminitextprocessingmodel;
+  String get geminivoiceprocessingmodel => _geminivoiceprocessingmodel;
+  String get geminivisionprocessingmodel => _geminivisionprocessingmodel;
+
   bool get autotitle => _autotitle;
   String get autotitlemodel => _autotitlemodel;
   bool get historyformodelsenabled => _historyformodelsenabled;
@@ -181,6 +193,27 @@ _useaistudiotoken =
     _setdefaultvoice = _prefs!.getString('setdefaultvoice') ?? 'shimmer';
     _visionprocessingmodel =
         _prefs!.getString('visionprocessingmodel') ?? 'gpt-4.1-nano';
+
+    _getgeminimodels =
+        (_prefs!.getString('modelsData') != null)
+            ? json.decode(_prefs!.getString('modelsData')!)
+                as Map<String, dynamic>
+            : {};
+    _availablegeminiModels =
+        (_prefs!.getString('availableModels') != null)
+            ? List<String>.from(
+              json.decode(_prefs!.getString('availableModels')!),
+            )
+            : [];
+
+    _geminitextprocessingmodel =
+        _prefs!.getString('textprocessingmodel') ?? 'gpt-4.1-nano';
+    _geminivoiceprocessingmodel =
+        _prefs!.getString('voiceprocessingmodel') ?? 'tts-1';
+    //_setdefaultvoice = _prefs!.getString('setdefaultvoice') ?? 'shimmer';
+    _geminivisionprocessingmodel =
+        _prefs!.getString('visionprocessingmodel') ?? 'gpt-4.1-nano';
+
     _autotitle =
         _prefs!.getBool('autotitle') ?? true; // Use string key for bool
     _autotitlemodel = _prefs!.getString('autotitlemodel') ?? ''; // Add default?
@@ -330,6 +363,122 @@ _useaistudiotoken =
     }
     return null;
   }
+Future<void> getgeminiModels() async {
+
+  final prefs = await SharedPreferences.getInstance();
+  final geminitoken = prefs.getString('geminitoken') ?? ''; 
+ String geminiurl = "https://generativelanguage.googleapis.com/v1beta/openai";
+    if (geminitoken.isEmpty || useaistudiotoken== false) {
+      debugPrint(
+        "Cannot fetch models: Gemini URL or Main API Token is missing.",
+      );
+      _availablegeminiModels = [];
+      _getgeminimodels = {'error': 'URL or Token missing'};
+      await _prefs?.remove('availablegeminiModels');
+      await _prefs?.remove('geminimodelsData');
+      notifyListeners();
+      return; // Exit early
+    }
+    if (!Uri.tryParse(geminiurl)!.hasAbsolutePath) {
+      debugPrint("Cannot fetch models: Invalid Base URL format.");
+      _availablegeminiModels = [];
+      _getgeminimodels = {'error': 'Invalid Base URL format'};
+      await _prefs?.remove('availablegeminiModels');
+      await _prefs?.remove('geminimodelsData');
+      notifyListeners();
+      return;
+    }
+
+    // Ensure the URL ends with /models if not already present
+    String fetchUrl =
+        geminiurl.endsWith('/models')
+            ? geminiurl
+            : (geminiurl.endsWith('/')
+                ? '${geminiurl}models'
+                : '$geminiurl/models');
+
+    debugPrint("Fetching models from: $fetchUrl");
+
+    try {
+      http.Response response = await http.get(
+        Uri.parse(fetchUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $geminitoken',
+        },
+      );
+
+      debugPrint("Get Models Status Code: ${response.statusCode}");
+      // debugPrint("Get Models Response Body: ${response.body}"); // Careful logging potentially large/sensitive data
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseData = json.decode(
+          utf8.decode(response.bodyBytes),
+        ); // Handle encoding
+
+        // Extract the list of models from the "data" field
+        List<dynamic> geminimodelsList = responseData['data'] ?? [];
+
+        // Create a list of model IDs
+        _availablegeminiModels =
+            geminimodelsList
+                .map<String?>(
+                  (model) => model is Map ? model['id']?.toString() : null,
+                )
+                .where((id) => id != null) // Filter out null IDs
+                .cast<String>() // Cast to non-nullable list
+                .toList();
+        _availablegeminiModels.sort(); // Sort for display
+
+        // Store the full models data (optional, could be large)
+        _getgeminimodels = responseData;
+        await _prefs?.setString(
+          'modelsData',
+          json.encode(_getmodels),
+        ); // Encode before saving
+
+        String availablegeminiModelsJson = json.encode(_availablegeminiModels);
+        await _prefs?.setString('availableModels', availablegeminiModelsJson);
+      } else {
+        debugPrint(
+          "Error fetching models: Status code ${response.statusCode}, Body: ${response.body}",
+        );
+        _getmodels = {
+          'error': 'Status code ${response.statusCode}',
+          'body': response.body,
+        };
+        _availablegeminiModels = [];
+        await _prefs?.remove('availablegeminiModels');
+        await _prefs?.remove(
+          'modelsData',
+        ); // Optionally clear old data on error
+      }
+
+      notifyListeners();
+    } catch (e, s) {
+      print('Error fetching models: $e\nStack: $s');
+      _getgeminimodels = {'error': e.toString()};
+      _availablegeminiModels = [];
+      await _prefs?.remove('availablegeminiModels');
+      await _prefs?.remove('geminimodelsData');
+      notifyListeners();
+    }
+  }
+
+  // If you need to get a specific model's details from the custom fetch
+  Map<String, dynamic>? getgeminiModelDetails(String modelId) {
+    if (_getgeminimodels['data'] is List) {
+      List<dynamic> models = _getgeminimodels['data'];
+      for (var model in models) {
+        if (model is Map && model['id'] == modelId) {
+          return Map<String, dynamic>.from(
+            model,
+          ); // Ensure it's the correct type
+        }
+      }
+    }
+    return null;
+  }
 
   // Generic String Setter
   Future<void> _setString(
@@ -369,6 +518,15 @@ _useaistudiotoken =
         break;
       case 'voiceprocessingmodel':
         _voiceprocessingmodel = newValue;
+        break;
+        case 'geminitextprocessingmodel':
+        _geminitextprocessingmodel = newValue;
+        break;
+      case 'geminivoiceprocessingmodel':
+        _geminivoiceprocessingmodel = newValue;
+        break;
+      case 'geminivisionprocessingmodel':
+        _geminivisionprocessingmodel = newValue;
         break;
       case 'setdefaultvoice':
         _setdefaultvoice = newValue;
@@ -593,6 +751,12 @@ _useaistudiotoken =
       _setString('setdefaultvoice', value, _setdefaultvoice);
   Future<void> setVisionprocessingmodel(String value) =>
       _setString('visionprocessingmodel', value, _visionprocessingmodel);
+      Future<void> setGeminiTextprocessingmodel(String value) =>
+      _setString('geminitextprocessingmodel', value, _geminitextprocessingmodel);
+  Future<void> setGeminiVoiceprocessingmodel(String value) =>
+      _setString('geminivoiceprocessingmodel', value, _geminivoiceprocessingmodel);
+  Future<void> setGeminiVisionprocessingmodel(String value) =>
+      _setString('geminivisionprocessingmodel', value, _geminivisionprocessingmodel);
   Future<void> setAutotitle(bool value) =>
       _setBool('autotitle', value, _autotitle);
   Future<void> setAutotitlemodel(String value) =>
@@ -728,6 +892,16 @@ _useaistudiotoken =
         return _voiceprocessingmodel;
       case 'visionprocessingmodel':
         return _visionprocessingmodel;
+        case 'getmodels':
+        return _getgeminimodels;
+      case 'availablegeminiModels':
+        return _availablegeminiModels;
+      case 'geminitextprocessingmodel':
+        return _geminitextprocessingmodel;
+      case 'geminivoiceprocessingmodel':
+        return _geminivoiceprocessingmodel;
+      case 'geminivisionprocessingmodel':
+        return _geminivisionprocessingmodel;
       case 'autotitle':
         return _autotitle;
       case 'autotitlemodel':
@@ -801,10 +975,16 @@ _useaistudiotoken =
     _usagemode = 'normal';
     _turnofftools = false;
     _getmodels = {};
+    _getgeminimodels = {};
     _availableModels = [];
+    _availablegeminiModels = [];
+
     _textprocessingmodel = 'gpt-4.1-nano';
     _voiceprocessingmodel = 'tts-1';
     _visionprocessingmodel = 'gpt-4.1-nano';
+    _geminitextprocessingmodel = 'gemini-2.0-flash-lite';
+    _geminivoiceprocessingmodel = 'gemini-2.0-flash-lite';
+    _geminivisionprocessingmodel = 'gemini-2.0-flash-lite';
     _autotitle = true;
     _autotitlemodel = '';
     _historyformodelsenabled = true;
@@ -854,6 +1034,11 @@ _useaistudiotoken =
     await _prefs?.remove('voiceprocessingmodel');
     await _prefs?.remove('setdefaultvoice');
     await _prefs?.remove('visionprocessingmodel');
+        await _prefs?.remove('modelsData'); // Clear fetched models raw data
+    await _prefs?.remove('availablegeminiModels'); // Clear fetched model IDs
+    await _prefs?.remove('geminitextprocessingmodel');
+    await _prefs?.remove('geminivoiceprocessingmodel');
+    await _prefs?.remove('geminivisionprocessingmodel');
     await _prefs?.remove('autotitle');
     await _prefs?.remove('autotitlemodel');
     await _prefs?.remove('historyformodelsenabled');

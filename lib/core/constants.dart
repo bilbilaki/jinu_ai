@@ -19,6 +19,14 @@ const String geminiMaxTokensKey = 'gemini_max_output_tokens';
 const String geminiSystemInstructionKey = 'gemini_system_instruction';
 const String geminiMessageBufferSizeKey = 'gemini_message_buffer_size';
 const String appThemeModeKey = 'app_theme_mode';
+const String funcSaveLtm = 'save_long_term_memory';
+const String funcRetrieveLtm = 'retrieve_long_term_memory';
+// Add other known function names if helpful
+const String funcGenerateSpeech = 'generate_speech_tool';
+const String funcWebSearch = 'web_search_tool';
+const String funcGenerateImage = 'generate_image_tool';
+const String funcImageInput = 'image_input_tool';
+const String funcFileInput = 'file_input_tool';
 
 // Custom Base URL Key (Matching const in SettingsService if used directly)
 const String settingsCustomBaseUrlKey = 'setapisdkbaseurl';

@@ -170,6 +170,31 @@ final defaultvoice = Provider<String>((ref) { // Changed from Map<String, String
   final settingsService = ref.watch(settingsServiceProvider);
   return settingsService.setdefaultvoice;
 });
+
+final geminiapitoken = Provider<String>((ref) { // Changed from Map<String, String>? to String
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.geminitoken;
+});
+final useaistudiotoken = Provider<bool>((ref) { // Changed from Map<String, String>? to String
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.useaistudiotoken;
+});
+
+final geminidefaultchatmodel = Provider<String>((ref) { // Changed from Map<String, String>? to String
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.geminitextprocessingmodel;
+});
+final geminivisionprocessingmodel = Provider<String>((ref) { // Changed from Map<String, String>? to String
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.geminivisionprocessingmodel;
+});
+final geminivoiceprocessingmodel = Provider<String>((ref) { // Changed from Map<String, String>? to String
+  final settingsService = ref.watch(settingsServiceProvider);
+  return settingsService.geminivoiceprocessingmodel;
+});
+
+
+
 Future<void> resetSettings() async {
   
   await settingsService.resetToDefaults();
