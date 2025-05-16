@@ -5,6 +5,7 @@ import 'package:dart_openai/dart_openai.dart'; // Make sure this is configured
 import 'package:flutter/foundation.dart';
 import 'package:jinu/presentation/providers/settings_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:jinu/presentation/providers/youtube_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:jinu/presentation/providers/memory_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -91,6 +92,86 @@ class OpenAIChatService {
         },
       ),
     ),
+    OpenAIToolModel(
+  type: 'function',
+  function: OpenAIFunctionModel(
+    name: 'manageYouTubeInteractions',
+    description: 'Interacts with YouTube. Can search for videos, get video details, manage playlists, and more. Requires OAuth for user-specific actions.',
+    parametersSchema: {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "The YouTube action to perform.",
+          "enum": [
+            "searchVideos",
+            "getVideoInfo",
+            "getVideoComments",
+            "listVideoCaptions",
+            "downloadCaptionTrack",
+            "createPlaylist",
+            "addVideoToPlaylist",
+            "listPlaylistItems"
+          ]
+        },
+        "query": {
+          "type": "string",
+          "description": "Required for 'searchVideos'. The search query."
+        },
+        "videoId": {
+          "type": "string",
+          "description": "Required for 'getVideoInfo', 'getVideoComments', etc. The YouTube video ID."
+        },
+        "captionId": {
+          "type": "string",
+          "description": "Required for 'downloadCaptionTrack'. The caption track ID."
+        },
+        "captionFormat": {
+          "type": "string",
+          "description": "Optional. Caption format (e.g., 'srt', 'vtt').",
+          "enum": ["srt", "vtt", "sbv"]
+        },
+        "playlistTitle": {
+          "type": "string",
+          "description": "Required for 'createPlaylist'. The playlist title."
+        },
+        "playlistDescription": {
+          "type": "string",
+          "description": "Optional. Playlist description."
+        },
+        "playlistPrivacy": {
+          "type": "string",
+          "description": "Optional. Privacy status ('public', 'private', 'unlisted').",
+          "enum": ["public", "private", "unlisted"]
+        },
+        "playlistId": {
+          "type": "string",
+          "description": "Required for playlist actions. The playlist ID."
+        },
+        "maxResults": {
+          "type": "integer",
+          "description": "Optional. Max results to return."
+        },
+        "searchVideoDefinition": {
+          "type": "string",
+          "description": "Optional. Filter by video definition ('any', 'high', 'standard').",
+          "enum": ["any", "high", "standard"]
+        },
+        "searchPublishedAfter": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional. Filter videos published after this date (ISO 8601)."
+        },
+        "searchOrder": {
+          "type": "string",
+          "description": "Optional. Search result order ('relevance', 'date', etc.).",
+          "enum": ["date", "rating", "relevance", "title", "videoCount", "viewCount"]
+        }
+      },
+      "required": ["action"]
+    },
+  ),
+),
   ];
 
   // --- Chat Completion ---
@@ -358,35 +439,122 @@ class OpenAIChatService {
   }
 
   Future<List<String>> handleToolCalls(OpenAIChatCompletionModel chatCompletion) async {
-    final message = chatCompletion.choices.first.message;
-    final List<String> toolResults = [];
-    
-    if (message.haveToolCalls) {
-      for (var toolCall in message.toolCalls!) {
-        try {
-          switch (toolCall.function.name) {
-            case 'save_to_memory':
-              final result = await _handleSaveMemory(toolCall);
-              toolResults.add(result);
-              break;
-            case 'search_memory':
-              final result = await _handleSearchMemory(toolCall);
-              toolResults.add(result);
-              break;
-            default:
-              debugPrint('Unhandled tool call: ${toolCall.function.name}');
-              toolResults.add('Unknown tool called: ${toolCall.function.name}');
-          }
-        } catch (e) {
-          debugPrint('Error handling tool call ${toolCall.function.name}: $e');
-          toolResults.add('Error executing ${toolCall.function.name}: ${e.toString()}');
+  final message = chatCompletion.choices.first.message;
+  final List<String> toolResults = [];
+
+  if (message.haveToolCalls) {
+    for (var toolCall in message.toolCalls!) {
+      try {
+        switch (toolCall.function.name) {
+          case 'save_to_memory':
+            final result = await _handleSaveMemory(toolCall);
+            toolResults.add(result);
+            break;
+          case 'search_memory':
+            final result = await _handleSearchMemory(toolCall);
+            toolResults.add(result);
+            break;
+          case 'manageYouTubeInteractions':
+            final result = await _handleYouTubeInteractions(toolCall);
+            toolResults.add(result);
+            break;
+          default:
+            debugPrint('Unhandled tool call: ${toolCall.function.name}');
+            toolResults.add('Unknown tool called: ${toolCall.function.name}');
         }
+      } catch (e) {
+        debugPrint('Error handling tool call ${toolCall.function.name}: $e');
+        toolResults.add('Error executing ${toolCall.function.name}: ${e.toString()}');
       }
     }
-    
-    return toolResults;
   }
 
+  return toolResults;
+}
+
+
+Future<String> _handleYouTubeInteractions(OpenAIResponseToolCall toolCall) async {
+  final youtubeService = ref.read(youtubeServiceProvider); // Assume you have a YouTube service provider
+  final decodedArgs = jsonDecode(toolCall.function.arguments);
+  final action = decodedArgs['action'] as String;
+
+  debugPrint('AI is executing YouTube action: $action with args: $decodedArgs');
+
+  try {
+    switch (action) {
+      case 'searchVideos':
+        final query = decodedArgs['query'] as String;
+        final maxResults = decodedArgs['maxResults'] as int? ?? 5;
+        final order = decodedArgs['searchOrder'] as String? ?? 'relevance';
+        
+        final result = await youtubeService.searchVideos(
+          query: query,
+          maxResults: maxResults,
+        );
+        
+        if (result['status'] == 'Success') {
+             final videos = (result['videos'] ?? []) as List<dynamic>;
+          return 'Found ${videos.length} videos for "$query"';
+        } else {
+          return 'YouTube search failed: ${result['message']}';
+        }
+
+      case 'getVideoInfo':
+        final videoId = decodedArgs['videoId'] as String;
+        final result = await youtubeService.getVideoInfo(videoId: videoId);
+        
+        if (result['status'] == 'Success') {
+          final title = result['title'] as String;
+          return 'Video info: "$title" (ID: $videoId)';
+        } else {
+          return 'Failed to fetch video info: ${result['message']}';
+        }
+        
+        // if (result['status'] == 'Success') {
+        //   return 'Added video (ID: $videoId) to playlist (ID: $playlistId)';
+        // } else {
+        //   return 'Failed to add video to playlist: ${result['message']}';
+        // }
+        case 'getPlaylistItems':
+        final playlistId = decodedArgs['playlistId'] as String;
+        final result = await youtubeService.listPlaylistItems(playlistId: playlistId);
+       // return 'Playlist items: ${result['items']}';
+        if (result['status'] == 'Success') {
+          final items = result['items'] as List;
+          return 'Found ${items.length} items in playlist (ID: $playlistId)';
+        } else {
+          return 'Failed to fetch playlist items: ${result['message']}';
+        }
+
+        case 'listVideoCaptions':
+        final videoId = decodedArgs['videoId'] as String;
+        final result = await youtubeService.listVideoCaptions(videoId: videoId);
+        // return 'Video captions: ${result['items']}';
+        if (result['status'] == 'Success') {
+          final items = result['items'] as List;
+          return 'Found ${items.length} captions for video (ID: $videoId, captionsID: ${items.map((e) => e['id']).join(', ')})';
+        } else {
+          return 'Failed to fetch video captions: ${result['message']}';
+        }
+
+        case 'downloadCaptionTrack':
+        final captionId = decodedArgs['captionId'] as String;
+        final result = await youtubeService.downloadCaptionTrack(captionId: captionId);
+        // return 'Caption track downloaded: ${result['status']}';
+        if (result['status'] == 'Success') {
+          return 'Caption track downloaded successfully';
+        } else {
+          return 'Failed to download caption track: ${result['message']}';
+        } 
+      // Add other actions (createPlaylist, listVideoCaptions, etc.) similarly
+      default:
+        return 'Unsupported YouTube action: $action';
+    }
+  } catch (e) {
+    debugPrint('Error executing YouTube action "$action": $e');
+    return 'YouTube action failed: ${e.toString()}';
+  }
+}
   Future<String> _handleSaveMemory(OpenAIResponseToolCall toolCall) async {
     final memoryService = ref.read(longTermMemoryServiceProvider);
     final decodedArgs = jsonDecode(toolCall.function.arguments);
@@ -708,6 +876,8 @@ class OpenAIChatService {
     );
   }
 }
+
+
 
 
 //     // Add text content (caption or main text)

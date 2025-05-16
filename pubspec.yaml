@@ -45,16 +45,17 @@ dependencies:
   url_launcher: ^6.3.1
   flutter_highlight: ^0.7.0
   permission_handler: ^12.0.0+1
-  file_picker: ^8.0.0+1
+  file_picker: ^10.1.2
   image_picker: ^1.1.1
-  record: ^5.1.0
+  record: ^6.0.0
   path_provider: ^2.1.5
-  mime: ^1.0.5
-  audioplayers: ^6.4.0
+  mime: ^2.0.0
+  #audioplayers: ^6.4.0
   path: ^1.9.1
   google_fonts: ^6.2.1
-  image_gallery_saver: ^2.0.3
   device_info_plus: ^11.4.0
+  image_gallery_saver_plus: any
+  youtube_results: ^0.1.1
 
 dev_dependencies:
   flutter_test:

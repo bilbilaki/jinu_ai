@@ -1,7 +1,7 @@
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/services/file_service.dart';
-
+  
 /// Provides an instance of [FileService].
 ///
 /// This provider manages the lifecycle of the [FileService], including

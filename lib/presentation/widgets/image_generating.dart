@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 // import 'package:path_provider/path_provider.dart'; // Not strictly needed for direct gallery save
 // import 'dart:io'; // Not strictly needed for direct gallery save
 import 'package:permission_handler/permission_handler.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 class ImageGenerationDrawer extends StatefulWidget {
   @override
@@ -115,7 +115,7 @@ class _ImageGenerationDrawerState extends State<ImageGenerationDrawer> {
 
 
       if (status.isGranted) {
-        final result = await ImageGallerySaver.saveImage(
+        final result = await ImageGallerySaverPlus.saveImage(
           _generatedImage!,
           quality: 90, // Optional: quality from 0 to 100
           name: "ai_image_${DateTime.now().millisecondsSinceEpoch}", // Optional: filename

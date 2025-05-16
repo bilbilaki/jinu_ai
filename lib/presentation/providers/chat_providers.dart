@@ -406,8 +406,22 @@ class ChatController extends StateNotifier<AsyncValue<void>> {
         // Check if the response contains tool calls
         if (response.choices.first.message.haveToolCalls) {
           try {
-            // Handle tool calls
-            await chatService.handleToolCalls(response);
+            // Handle tool calls and get results
+            final toolResults = await chatService.handleToolCalls(response);
+
+            // Show each tool result as a chat message
+            for (final toolResult in toolResults) {
+              final toolMessage = ChatMessage(
+                sender: MessageSender.system, // or MessageSender.ai if you prefer
+                content: toolResult,
+                timestamp: DateTime.now(),
+                contentType: ContentType.text,
+                metadata: {'tool_result': true},
+              );
+              if (historyEnabled) {
+                await historyService.addMessageToSession(currentSessionId, toolMessage);
+              }
+            }
 
             // Optionally, generate a follow-up response with the tool results
             final toolCalls =

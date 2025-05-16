@@ -158,55 +158,56 @@ class _DynamicInputFieldState extends ConsumerState<DynamicInputField> {
 
 
   Future<void> _pickFileAndSend(_PickSource source) async {
-    if (widget.isLoading) return; // Double check loading state
+  if (widget.isLoading) return;
 
-    final fileService = ref.read(fileServiceProvider);
-    File? pickedFile;
-    ContentType contentType = ContentType.file; // Default
+final fileService = ref.read(fileServiceProvider);
+  File? pickedFile;
+  ContentType contentType = ContentType.file;
 
-    try {
-      switch (source) {
-        case _PickSource.gallery:
-          final fileModel = await fileService.pickImageFromGallery();
-          pickedFile = fileModel?.file;
-          if (pickedFile != null) contentType = ContentType.image;
-          break;
-        case _PickSource.camera:
-final fileModel = await fileService.pickImageFromGallery();
-          pickedFile = fileModel?.file;
-          break;
-        case _PickSource.fileStorage:
-final fileModel = await fileService.pickFile();
-          if (pickedFile != null) {
-            final mime = fileService.getMimeType(pickedFile.path);
-            if (mime != null) {
-              if (mime.startsWith('image/')) contentType = ContentType.image;
-              else if (mime.startsWith('audio/')) contentType = ContentType.audio;
-              // else keep ContentType.file
-            }
+  try {
+    switch (source) {
+      case _PickSource.gallery:
+        final fileModel = await fileService.pickImageFromGallery();
+        pickedFile = fileModel?.file;
+        if (pickedFile != null) contentType = ContentType.image;
+        break;
+      case _PickSource.camera:
+        final fileModel = await fileService.takePhotoWithCamera();
+        pickedFile = fileModel?.file;
+        if (pickedFile != null) contentType = ContentType.image;
+        break;
+      case _PickSource.fileStorage:
+        final fileModel = await fileService.pickFile();
+        pickedFile = fileModel?.file;
+        if (pickedFile != null) {
+          final mime = fileService.getMimeType(pickedFile.path);
+          if (mime != null) {
+            if (mime.startsWith('image/')) contentType = ContentType.image;
+            else if (mime.startsWith('audio/')) contentType = ContentType.audio;
+            // else keep ContentType.file
           }
-          break;
-      }
-
-      if (pickedFile != null) {
-        widget.onSendFile(pickedFile, contentType);
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('File selection cancelled or failed.'), duration: Duration(seconds: 2)),
-          );
         }
-      }
-    } catch (e, s) {
-      debugPrint("Error picking/sending file: $e\n$s");
+        break;
+    }
+
+    if (pickedFile != null) {
+      widget.onSendFile(pickedFile, contentType);
+    } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error selecting file: ${e.toString().substring(0,min(e.toString().length, 50))}...'), duration: Duration(seconds: 3)),
+          const SnackBar(content: Text('File selection cancelled or failed.'), duration: Duration(seconds: 2)),
         );
       }
     }
+  } catch (e, s) {
+    debugPrint("Error picking/sending file: $e\n$s");
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error selecting file: ${e.toString().substring(0, min(e.toString().length, 50))}...'), duration: Duration(seconds: 3)),
+      );
+    }
   }
-
+}
 
   Future<void> _startRecording() async {
     if (widget.isLoading || _isRecording) return;

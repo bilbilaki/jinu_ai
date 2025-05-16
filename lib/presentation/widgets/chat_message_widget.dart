@@ -3,7 +3,7 @@ import 'dart:async' show StreamSubscription;
 import 'dart:io'; // For File operations
 import 'dart:math';
 
-import 'package:audioplayers/audioplayers.dart'; // Audio player
+// import 'package:audioplayers/audioplayers.dart'; // Audio player
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -25,7 +25,9 @@ class ChatMessageWidget extends ConsumerStatefulWidget {
 }
 
 class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> {
+  /*
   // --- Audio Player State ---
+  
   AudioPlayer? _audioPlayer; // Nullable, initialized if needed
   PlayerState? _playerState;
   Duration? _duration;
@@ -35,136 +37,137 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> {
   StreamSubscription? _playerCompleteSubscription;
   StreamSubscription? _playerStateChangeSubscription;
   StreamSubscription? _playerErrorSubscription;
-
+  
   bool get _isPlaying => _playerState == PlayerState.playing;
-
+  
   @override
   void initState() {
-    super.initState();
-    if (widget.message.contentType == ContentType.audio) {
-      _audioPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
-      _playerState = PlayerState.stopped; // Initial state
-
-      _playerStateChangeSubscription =
-          _audioPlayer!.onPlayerStateChanged.listen((state) {
-        if (mounted) setState(() => _playerState = state);
-      }, onError: (msg) {
-        debugPrint('Audio Player State Error: $msg');
-        if (mounted) {
-          setState(() => _playerState = PlayerState.stopped);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Audio player error: $msg')),
-          );
-        }
-      });
-
-      _durationSubscription = _audioPlayer!.onDurationChanged.listen((duration) {
-        if (mounted) setState(() => _duration = duration);
-      });
-
-      _positionSubscription = _audioPlayer!.onPositionChanged.listen((p) {
-        if (mounted) setState(() => _position = p);
-      });
-
-      _playerCompleteSubscription =
-          _audioPlayer!.onPlayerComplete.listen((event) {
-        if (mounted) {
-          setState(() {
-            _playerState = PlayerState.completed;
-            _position = Duration.zero;
-          });
-        }
-      });
-      _initAudioSource();
-    }
+  super.initState();
+  if (widget.message.contentType == ContentType.audio) {
+  _audioPlayer = AudioPlayer()..setReleaseMode(ReleaseMode.stop);
+  _playerState = PlayerState.stopped; // Initial state
+  
+  _playerStateChangeSubscription =
+  _audioPlayer!.onPlayerStateChanged.listen((state) {
+  if (mounted) setState(() => _playerState = state);
+  }, onError: (msg) {
+  debugPrint('Audio Player State Error: $msg');
+  if (mounted) {
+  setState(() => _playerState = PlayerState.stopped);
+  ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(content: Text('Audio player error: $msg')),
+  );
   }
-
+  });
+  
+  _durationSubscription = _audioPlayer!.onDurationChanged.listen((duration) {
+  if (mounted) setState(() => _duration = duration);
+  });
+  
+  _positionSubscription = _audioPlayer!.onPositionChanged.listen((p) {
+  if (mounted) setState(() => _position = p);
+  });
+  
+  _playerCompleteSubscription =
+  _audioPlayer!.onPlayerComplete.listen((event) {
+  if (mounted) {
+  setState(() {
+  _playerState = PlayerState.completed;
+  _position = Duration.zero;
+  });
+  }
+  });
+  _initAudioSource();
+  }
+  }
+  
   Future<void> _initAudioSource() async {
-    if (_audioPlayer == null || widget.message.contentType != ContentType.audio) return;
-
-    Source? source;
-    if (widget.message.filePath != null && widget.message.filePath!.isNotEmpty) {
-      final file = File(widget.message.filePath!);
-      if (await file.exists()) {
-        source = DeviceFileSource(widget.message.filePath!);
-      } else {
-        debugPrint("Audio file not found at local path: ${widget.message.filePath}");
-      }
-    } else if (widget.message.fileUrl != null && widget.message.fileUrl!.isNotEmpty) {
-      source = UrlSource(widget.message.fileUrl!);
-    }
-
-    if (source != null) {
-      try {
-        await _audioPlayer!.setSource(source);
-        debugPrint("Audio source set for message: ${widget.message.id}");
-      } catch (e) {
-        debugPrint("Error setting audio source for ${widget.message.id}: $e");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error loading audio: ${e.toString().substring(0,min(e.toString().length, 50))}...')),
-          );
-        }
-      }
-    } else {
-      debugPrint("No valid audio source found for message: ${widget.message.id}");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Audio source not available.')),
-          );
-        }
-    }
+  if (_audioPlayer == null || widget.message.contentType != ContentType.audio) return;
+  
+  Source? source;
+  if (widget.message.filePath != null && widget.message.filePath!.isNotEmpty) {
+  final file = File(widget.message.filePath!);
+  if (await file.exists()) {
+  source = DeviceFileSource(widget.message.filePath!);
+  } else {
+  debugPrint("Audio file not found at local path: ${widget.message.filePath}");
   }
-
+  } else if (widget.message.fileUrl != null && widget.message.fileUrl!.isNotEmpty) {
+  source = UrlSource(widget.message.fileUrl!);
+  }
+  
+  if (source != null) {
+  try {
+  await _audioPlayer!.setSource(source);
+  debugPrint("Audio source set for message: ${widget.message.id}");
+  } catch (e) {
+  debugPrint("Error setting audio source for ${widget.message.id}: $e");
+  if (mounted) {
+  ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(content: Text('Error loading audio: ${e.toString().substring(0,min(e.toString().length, 50))}...')),
+  );
+  }
+  }
+  } else {
+  debugPrint("No valid audio source found for message: ${widget.message.id}");
+  if (mounted) {
+  ScaffoldMessenger.of(context).showSnackBar(
+  const SnackBar(content: Text('Audio source not available.')),
+  );
+  }
+  }
+  }
+  
   @override
   void dispose() {
-    _durationSubscription?.cancel();
-    _positionSubscription?.cancel();
-    _playerCompleteSubscription?.cancel();
-    _playerStateChangeSubscription?.cancel();
-    _playerErrorSubscription?.cancel();
-    _audioPlayer?.dispose(); // Dispose player only if it was created
-    super.dispose();
+  _durationSubscription?.cancel();
+  _positionSubscription?.cancel();
+  _playerCompleteSubscription?.cancel();
+  _playerStateChangeSubscription?.cancel();
+  _playerErrorSubscription?.cancel();
+  _audioPlayer?.dispose(); // Dispose player only if it was created
+  super.dispose();
   }
-
+  
   Future<void> _play() async {
-    if (_audioPlayer == null) return;
-    if (_audioPlayer!.source == null) {
-      debugPrint("Attempted to play but source is null for ${widget.message.id}. Initializing...");
-      await _initAudioSource();
-      if (_audioPlayer!.source == null) {
-        debugPrint("Failed to initialize source on play for ${widget.message.id}.");
-        if(mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot play audio: Source unavailable.')));
-        return;
-      }
-    }
-    try {
-      await _audioPlayer!.resume();
-       // setState is called by the onPlayerStateChanged listener
-    } catch (e) {
-      debugPrint("Error playing audio for ${widget.message.id}: $e");
-      if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error playing audio: $e')));
-    }
+  if (_audioPlayer == null) return;
+  if (_audioPlayer!.source == null) {
+  debugPrint("Attempted to play but source is null for ${widget.message.id}. Initializing...");
+  await _initAudioSource();
+  if (_audioPlayer!.source == null) {
+  debugPrint("Failed to initialize source on play for ${widget.message.id}.");
+  if(mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot play audio: Source unavailable.')));
+  return;
   }
-
+  }
+  try {
+  await _audioPlayer!.resume();
+  // setState is called by the onPlayerStateChanged listener
+  } catch (e) {
+  debugPrint("Error playing audio for ${widget.message.id}: $e");
+  if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error playing audio: $e')));
+  }
+  }
+  
   Future<void> _pause() async {
-    if (_audioPlayer == null) return;
-    try {
-      await _audioPlayer!.pause();
-    } catch (e) {
-      debugPrint("Error pausing audio for ${widget.message.id}: $e");
-       if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error pausing audio: $e')));
-    }
+  if (_audioPlayer == null) return;
+  try {
+  await _audioPlayer!.pause();
+  } catch (e) {
+  debugPrint("Error pausing audio for ${widget.message.id}: $e");
+  if(mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error pausing audio: $e')));
   }
-
+  }
+  
   Future<void> _seek(Duration position) async {
-    if (_audioPlayer == null) return;
-    try {
-      await _audioPlayer!.seek(position);
-    } catch (e) {
-      debugPrint("Error seeking audio for ${widget.message.id}: $e");
-    }
+  if (_audioPlayer == null) return;
+  try {
+  await _audioPlayer!.seek(position);
+  } catch (e) {
+  debugPrint("Error seeking audio for ${widget.message.id}: $e");
   }
+  }
+  */
 
   Future<void> _saveFile() async {
     final fileService = ref.read(fileServiceProvider);
@@ -364,7 +367,8 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> {
       case ContentType.image:
         return _buildImageContent(context, widget.message, textColor);
       case ContentType.audio:
-        return _buildAudioContent(context, widget.message, textColor);
+      // return _buildAudioContent(context, widget.message, textColor);
+      return _buildTextContent(context, widget.message.copyWith(content: "[Audio content removed]"), textColor); // Placeholder
       case ContentType.file:
         return _buildFilePlaceholderContent(context, widget.message, textColor);
       case ContentType.text:
@@ -485,102 +489,106 @@ class _ChatMessageWidgetState extends ConsumerState<ChatMessageWidget> {
     );
   }
 
+  /*
+  /*
   Widget _buildAudioContent(BuildContext context, ChatMessage message, Color textColor) {
-    final currentPosition = _position ?? Duration.zero;
-    final totalDuration = _duration ?? Duration.zero;
-    final bool isAudioLoading = _playerState == null || (_playerState == PlayerState.stopped && totalDuration == Duration.zero && _audioPlayer?.source != null);
-    final String durationText = totalDuration != Duration.zero
-        ? "${_formatDuration(currentPosition)} / ${_formatDuration(totalDuration)}"
-        : (isAudioLoading ? "Loading..." : "--:-- / --:--");
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-         if (message.content.isNotEmpty && message.content != "[User sent audio: ${message.fileName}]" && message.content != "[Sent Audio]") ...[ // Avoid redundant text
-          _buildTextContent(context, message.copyWith(contentType: ContentType.text), textColor),
-          const SizedBox(height: 8),
-        ],
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-          decoration: BoxDecoration(
-            color: textColor.withOpacity(0.07),
-            borderRadius: BorderRadius.circular(25),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: isAudioLoading
-                    ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: textColor))
-                    : Icon(
-                        _isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
-                        size: 30.0,
-                        color: textColor,
-                      ),
-                onPressed: (_audioPlayer?.source == null && !isAudioLoading) ? null : (_isPlaying ? _pause : _play), // Disable if no source and not loading
-                tooltip: _isPlaying ? 'Pause' : (isAudioLoading? 'Loading audio' : 'Play'),
-                padding: const EdgeInsets.all(4), // Smaller padding
-                visualDensity: VisualDensity.compact,
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (!isAudioLoading && totalDuration > Duration.zero)
-                      SliderTheme(
-                        data: SliderTheme.of(context).copyWith(
-                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7.0),
-                          overlayShape: const RoundSliderOverlayShape(overlayRadius: 14.0),
-                          trackHeight: 2.5,
-                          activeTrackColor: textColor.withOpacity(0.85),
-                          inactiveTrackColor: textColor.withOpacity(0.35),
-                          thumbColor: textColor,
-                          overlayColor: textColor.withOpacity(0.25),
-                        ),
-                        child: Slider(
-                          value: (totalDuration.inMicroseconds > 0
-                              ? currentPosition.inMicroseconds.clamp(0, totalDuration.inMicroseconds).toDouble() / totalDuration.inMicroseconds
-                              : 0.0),
-                          min: 0.0,
-                          max: 1.0,
-                          onChanged: (value) {
-                            final newPosition = totalDuration * value;
-                            _seek(newPosition);
-                          },
-                        ),
-                      )
-                    else
-                      const SizedBox(height: 18), // Placeholder for slider height
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(
-                        durationText,
-                        style: TextStyle(fontSize: 11.0, color: textColor.withOpacity(0.8)),
-                        textAlign: TextAlign.right,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (message.fileName != null && message.fileName!.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 6.0, left: 4.0),
-            child: Text(
-              message.fileName!,
-              style: TextStyle(fontSize: 11.5, color: textColor.withOpacity(0.75)),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-      ],
-    );
+  final currentPosition = _position ?? Duration.zero;
+  final totalDuration = _duration ?? Duration.zero;
+  final bool isAudioLoading = _playerState == null || (_playerState == PlayerState.stopped && totalDuration == Duration.zero && _audioPlayer?.source != null);
+  final String durationText = totalDuration != Duration.zero
+  ? "${_formatDuration(currentPosition)} / ${_formatDuration(totalDuration)}"
+  : (isAudioLoading ? "Loading..." : "--:-- / --:--");
+  
+  return Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  mainAxisSize: MainAxisSize.min,
+  children: [
+  if (message.content.isNotEmpty && message.content != "[User sent audio: ${message.fileName}]" && message.content != "[Sent Audio]") ...[ // Avoid redundant text
+  _buildTextContent(context, message.copyWith(contentType: ContentType.text), textColor),
+  const SizedBox(height: 8),
+  ],
+  Container(
+  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+  decoration: BoxDecoration(
+  color: textColor.withOpacity(0.07),
+  borderRadius: BorderRadius.circular(25),
+  ),
+  child: Row(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+  IconButton(
+  icon: isAudioLoading
+  ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: textColor))
+  : Icon(
+  _isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded,
+  size: 30.0,
+  color: textColor,
+  ),
+  onPressed: (_audioPlayer?.source == null && !isAudioLoading) ? null : (_isPlaying ? _pause : _play), // Disable if no source and not loading
+  tooltip: _isPlaying ? 'Pause' : (isAudioLoading? 'Loading audio' : 'Play'),
+  padding: const EdgeInsets.all(4), // Smaller padding
+  visualDensity: VisualDensity.compact,
+  ),
+  const SizedBox(width: 4),
+  Expanded(
+  child: Column(
+  mainAxisSize: MainAxisSize.min,
+  crossAxisAlignment: CrossAxisAlignment.stretch,
+  children: [
+  if (!isAudioLoading && totalDuration > Duration.zero)
+  SliderTheme(
+  data: SliderTheme.of(context).copyWith(
+  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7.0),
+  overlayShape: const RoundSliderOverlayShape(overlayRadius: 14.0),
+  trackHeight: 2.5,
+  activeTrackColor: textColor.withOpacity(0.85),
+  inactiveTrackColor: textColor.withOpacity(0.35),
+  thumbColor: textColor,
+  overlayColor: textColor.withOpacity(0.25),
+  ),
+  child: Slider(
+  value: (totalDuration.inMicroseconds > 0
+  ? currentPosition.inMicroseconds.clamp(0, totalDuration.inMicroseconds).toDouble() / totalDuration.inMicroseconds
+  : 0.0),
+  min: 0.0,
+  max: 1.0,
+  onChanged: (value) {
+  final newPosition = totalDuration * value;
+  _seek(newPosition);
+  },
+  ),
+  )
+  else
+  const SizedBox(height: 18), // Placeholder for slider height
+  Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+  child: Text(
+  durationText,
+  style: TextStyle(fontSize: 11.0, color: textColor.withOpacity(0.8)),
+  textAlign: TextAlign.right,
+  ),
+  ),
+  ],
+  ),
+  ),
+  ],
+  ),
+  ),
+  if (message.fileName != null && message.fileName!.isNotEmpty)
+  Padding(
+  padding: const EdgeInsets.only(top: 6.0, left: 4.0),
+  child: Text(
+  message.fileName!,
+  style: TextStyle(fontSize: 11.5, color: textColor.withOpacity(0.75)),
+  maxLines: 1,
+  overflow: TextOverflow.ellipsis,
+  ),
+  ),
+  ],
+  );
   }
+  */
+  */
 
   Widget _buildFilePlaceholderContent(BuildContext context, ChatMessage message, Color textColor) {
     IconData fileIcon = Icons.insert_drive_file_outlined;
