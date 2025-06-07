@@ -1,0 +1,378 @@
+Analyzing jinu_new-ui-2...
+
+warning - pubspec.yaml:85:7 - The asset directory 'assets/images/' doesn't exist. Try creating the directory or fixing the path to the directory. - asset_directory_does_not_exist
+warning - pubspec.yaml:86:7 - The asset directory 'assets/icons/' doesn't exist. Try creating the directory or fixing the path to the directory. - asset_directory_does_not_exist
+warning - pubspec.yaml:87:7 - The asset directory 'assets/animations/' doesn't exist. Try creating the directory or fixing the path to the directory. - asset_directory_does_not_exist
+   info - lib/core/di/injection_container.dart:3:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/core/di/injection_container.dart:10:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/core/di/injection_container.dart:12:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/core/di/injection_container.dart:17:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/core/di/injection_container.dart:20:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/core/di/injection_container.dart:21:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/core/di/injection_container.dart:27:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/core/di/injection_container.dart:28:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/core/di/injection_container.dart:37:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:37:28 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/core/di/injection_container.dart:40:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:43:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:46:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:49:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:54:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:60:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:63:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:68:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:69:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:70:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:71:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:72:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:73:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:76:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:80:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:80:22 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/core/di/injection_container.dart:81:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/di/injection_container.dart:85:3 - Unnecessary duplication of receiver. Try using a cascade to avoid the duplication. - cascade_invocations
+   info - lib/core/errors/failures.dart:5:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/core/navigation/app_router.dart:5:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/core/navigation/app_router.dart:8:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/core/navigation/app_router.dart:22:42 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/core/theme/app_theme.dart:16:5 - 'background' is deprecated and shouldn't be used. Use surface instead. This feature was deprecated after v3.18.0-0.1.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/core/theme/app_theme.dart:17:5 - 'onBackground' is deprecated and shouldn't be used. Use onSurface instead. This feature was deprecated after v3.18.0-0.1.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/core/theme/app_theme.dart:30:5 - 'background' is deprecated and shouldn't be used. Use surface instead. This feature was deprecated after v3.18.0-0.1.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/core/theme/app_theme.dart:31:5 - 'onBackground' is deprecated and shouldn't be used. Use onSurface instead. This feature was deprecated after v3.18.0-0.1.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/core/theme/app_theme.dart:140:56 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/core/theme/app_theme.dart:188:55 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/core/utils/responsive_helper.dart:9:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/core/utils/responsive_helper.dart:9:52 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/core/utils/responsive_helper.dart:12:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/core/utils/responsive_helper.dart:25:15 - The method is used to change a property. Try converting the method to a setter. - use_setters_to_change_properties
+   info - lib/core/utils/responsive_helper.dart:71:41 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/core/utils/responsive_helper.dart:99:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/core/utils/responsive_helper.dart:101:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/core/utils/responsive_helper.dart:107:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/datasources/ai_local_datasource.dart:18:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/data/datasources/ai_remote_datasource.dart:4:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/data/datasources/ai_remote_datasource.dart:27:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/data/datasources/ai_remote_datasource.dart:102:37 - To-do comment doesn't follow the Flutter style. Try following the Flutter style for to-do comments. - flutter_style_todos
+   info - lib/data/datasources/ai_remote_datasource.dart:121:37 - To-do comment doesn't follow the Flutter style. Try following the Flutter style for to-do comments. - flutter_style_todos
+   info - lib/data/datasources/media_remote_datasource.dart:4:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/data/datasources/media_remote_datasource.dart:32:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/data/datasources/settings_local_datasource.dart:15:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/data/models/app_settings_model.dart:17:64 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/models/app_settings_model.dart:31:33 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/models/app_settings_model.dart:57:11 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/data/models/app_settings_model.dart:57:61 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/models/app_settings_model.dart:71:20 - The member 'copyWith' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation. - annotate_overrides
+   info - lib/data/models/app_settings_model.dart:81:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/models/media_content_model.dart:10:20 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/data/models/media_content_model.dart:11:20 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/data/models/media_content_model.dart:17:65 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/models/media_content_model.dart:38:33 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/models/media_content_model.dart:53:11 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/data/models/media_content_model.dart:53:62 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/models/media_content_model.dart:68:21 - The member 'copyWith' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation. - annotate_overrides
+   info - lib/data/models/media_content_model.dart:79:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/models/message_model.dart:15:60 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/models/message_model.dart:34:33 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/models/message_model.dart:47:11 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/data/models/message_model.dart:47:52 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/models/message_model.dart:60:16 - The member 'copyWith' overrides an inherited member but isn't annotated with '@override'. Try adding the '@override' annotation. - annotate_overrides
+   info - lib/data/models/message_model.dart:69:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/repositories/ai_repository_impl.dart:6:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/data/repositories/ai_repository_impl.dart:13:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/data/repositories/ai_repository_impl.dart:34:38 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/data/repositories/ai_repository_impl.dart:38:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/ai_repository_impl.dart:56:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/ai_repository_impl.dart:78:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/ai_repository_impl.dart:90:32 - Closure should be a tearoff. Try using a tearoff rather than a closure. - unnecessary_lambdas
+   info - lib/data/repositories/ai_repository_impl.dart:94:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/ai_repository_impl.dart:106:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/ai_repository_impl.dart:116:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/ai_repository_impl.dart:126:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/media_repository_impl.dart:10:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/data/repositories/media_repository_impl.dart:23:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/media_repository_impl.dart:39:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/media_repository_impl.dart:55:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/media_repository_impl.dart:71:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/media_repository_impl.dart:80:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/repositories/media_repository_impl.dart:82:12 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/data/repositories/media_repository_impl.dart:82:17 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/data/repositories/media_repository_impl.dart:89:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/repositories/media_repository_impl.dart:95:72 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/repositories/media_repository_impl.dart:101:63 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/repositories/media_repository_impl.dart:110:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/data/repositories/media_repository_impl.dart:112:12 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/data/repositories/media_repository_impl.dart:112:17 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/data/repositories/settings_repository_impl.dart:11:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/data/repositories/settings_repository_impl.dart:18:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/settings_repository_impl.dart:29:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/settings_repository_impl.dart:39:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/settings_repository_impl.dart:49:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/data/repositories/settings_repository_impl.dart:60:7 - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch'. - avoid_catches_without_on_clauses
+   info - lib/domain/entities/app_settings.dart:15:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/domain/entities/app_settings.dart:37:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/domain/entities/media_content.dart:18:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/domain/entities/media_content.dart:24:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/domain/entities/media_content.dart:25:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/domain/entities/media_content.dart:42:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/domain/entities/message.dart:16:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/domain/entities/message.dart:36:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/domain/usecases/chat/get_chat_history.dart:9:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/domain/usecases/chat/get_chat_history.dart:14:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/domain/usecases/chat/get_chat_history.dart:15:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/domain/usecases/chat/send_message.dart:9:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/domain/usecases/chat/send_message.dart:15:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/domain/usecases/chat/send_message.dart:16:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/domain/usecases/chat/send_message.dart:27:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/domain/usecases/chat/send_message.dart:28:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/domain/usecases/media/generate_audio.dart:9:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/domain/usecases/media/generate_audio.dart:14:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/domain/usecases/media/generate_audio.dart:15:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/domain/usecases/media/generate_audio.dart:24:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/domain/usecases/media/generate_audio.dart:25:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/domain/usecases/media/generate_image.dart:9:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/domain/usecases/media/generate_image.dart:14:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/domain/usecases/media/generate_image.dart:15:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/domain/usecases/media/generate_image.dart:24:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/domain/usecases/media/generate_image.dart:25:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/domain/usecases/settings/get_settings.dart:9:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/domain/usecases/settings/get_settings.dart:11:47 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/domain/usecases/settings/get_settings.dart:12:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/domain/usecases/settings/update_settings.dart:9:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/domain/usecases/settings/update_settings.dart:11:60 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/domain/usecases/settings/update_settings.dart:12:12 - Unnecessary 'await'. Try removing the 'await'. - unnecessary_await_in_return
+   info - lib/main.dart:7:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/main.dart:10:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/main.dart:25:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/main.dart:32:40 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/main.dart:40:39 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/blocs/chat/chat_bloc.dart:2:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/blocs/chat/chat_bloc.dart:6:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/blocs/chat/chat_bloc.dart:15:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/chat/chat_bloc.dart:45:16 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/blocs/chat/chat_bloc.dart:82:16 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/blocs/chat/chat_bloc.dart:164:14 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/blocs/chat/chat_event.dart:14:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/chat/chat_event.dart:24:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/chat/chat_event.dart:37:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/chat/chat_event.dart:49:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/chat/chat_state.dart:9:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/chat/chat_state.dart:21:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/blocs/media/media_bloc.dart:2:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/blocs/media/media_bloc.dart:6:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/blocs/media/media_bloc.dart:15:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/media/media_bloc.dart:43:16 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/blocs/media/media_bloc.dart:67:16 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/blocs/media/media_bloc.dart:78:14 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/blocs/media/media_event.dart:14:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/media/media_event.dart:27:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/media/media_state.dart:8:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/media/media_state.dart:18:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/blocs/navigation/navigation_cubit.dart:2:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/blocs/navigation/navigation_cubit.dart:17:23 - 'bool' parameters should be named parameters. Try converting the parameter to a named parameter. - avoid_positional_boolean_parameters
+   info - lib/presentation/blocs/navigation/navigation_state.dart:8:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/navigation/navigation_state.dart:18:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/blocs/theme/theme_cubit.dart:3:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/blocs/theme/theme_cubit.dart:15:3 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/theme/theme_state.dart:8:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/blocs/theme/theme_state.dart:18:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/chat/chat_page.dart:6:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/pages/chat/chat_page.dart:9:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/pages/chat/chat_page.dart:16:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/chat/chat_page.dart:28:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/chat/chat_page.dart:49:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/chat/chat_page.dart:60:24 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/pages/chat/chat_page.dart:70:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/chat/chat_page.dart:87:52 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/chat/chat_page.dart:108:19 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/pages/chat/chat_page.dart:116:49 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/chat/chat_page.dart:140:68 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/chat/chat_page.dart:156:50 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/chat/chat_page.dart:233:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/chat/chat_page.dart:251:68 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/chat/chat_page.dart:267:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/chat/chat_page.dart:288:64 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/home/home_page.dart:5:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/pages/home/home_page.dart:8:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/pages/home/home_page.dart:14:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/home/home_page.dart:30:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/home/home_page.dart:46:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/home/home_page.dart:73:52 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/home/home_page.dart:85:23 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/pages/home/home_page.dart:100:53 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/home/home_page.dart:138:72 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/home/home_page.dart:151:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/home/home_page.dart:195:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/home/home_page.dart:203:60 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/home/home_page.dart:227:68 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/home/home_page.dart:236:60 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/home/home_page.dart:243:47 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/home/home_page.dart:260:21 - Use 'const' literals as arguments to constructors of '@immutable' classes. Try adding 'const' before the literal. - prefer_const_literals_to_create_immutables
+   info - lib/presentation/pages/home/home_page.dart:261:13 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/presentation/pages/home/home_page.dart:267:13 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/presentation/pages/home/home_page.dart:273:13 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/presentation/pages/home/home_page.dart:279:13 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/presentation/pages/media/media_page.dart:6:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/pages/media/media_page.dart:10:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/pages/media/media_page.dart:16:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/media/media_page.dart:28:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/media/media_page.dart:49:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/media/media_page.dart:74:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/media/media_page.dart:102:52 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/media/media_page.dart:114:25 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/pages/media/media_page.dart:130:50 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/media/media_page.dart:159:68 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/profile/profile_page.dart:4:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/pages/profile/profile_page.dart:11:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/profile/profile_page.dart:26:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/profile/profile_page.dart:41:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/profile/profile_page.dart:65:52 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/profile/profile_page.dart:76:23 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/pages/profile/profile_page.dart:91:52 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/profile/profile_page.dart:123:62 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/profile/profile_page.dart:161:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/profile/profile_page.dart:181:48 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/profile/profile_page.dart:235:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/profile/profile_page.dart:241:26 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/profile/profile_page.dart:269:53 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/profile/profile_page.dart:337:6 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/profile/profile_page.dart:343:26 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/profile/profile_page.dart:362:66 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/profile/profile_page.dart:371:60 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/pages/settings/settings_page.dart:4:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/pages/settings/settings_page.dart:7:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/pages/settings/settings_page.dart:14:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/settings/settings_page.dart:29:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/settings/settings_page.dart:46:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/settings/settings_page.dart:76:52 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/settings/settings_page.dart:87:23 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/pages/settings/settings_page.dart:98:23 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/pages/settings/settings_page.dart:108:53 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/pages/settings/settings_page.dart:137:68 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/chat/chat_input.dart:28:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/chat/chat_input.dart:43:68 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/chat/chat_input.dart:114:43 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/chat/chat_input.dart:119:45 - 'surfaceVariant' is deprecated and shouldn't be used. Use surfaceContainerHighest instead. This feature was deprecated after v3.18.0-0.1.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/chat/chat_input.dart:159:5 - To-do comment doesn't follow the Flutter style. Try following the Flutter style for to-do comments. - flutter_style_todos
+   info - lib/presentation/widgets/chat/chat_input.dart:168:5 - To-do comment doesn't follow the Flutter style. Try following the Flutter style for to-do comments. - flutter_style_todos
+   info - lib/presentation/widgets/chat/chat_message_bubble.dart:11:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/widgets/chat/chat_message_bubble.dart:13:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/presentation/widgets/chat/chat_message_bubble.dart:48:57 - 'surfaceVariant' is deprecated and shouldn't be used. Use surfaceContainerHighest instead. This feature was deprecated after v3.18.0-0.1.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/chat/chat_message_bubble.dart:84:58 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/chat/chat_message_bubble.dart:108:66 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/chat/chat_message_bubble.dart:125:55 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/chat/chat_message_bubble.dart:151:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/chat/chat_message_bubble.dart:181:63 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/chat/chat_message_bubble.dart:188:60 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/chat/chat_message_bubble.dart:201:62 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/chat/chat_message_list.dart:36:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/chat/chat_message_list.dart:72:49 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/chat/chat_message_list.dart:84:60 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/chat/chat_message_list.dart:90:62 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/chat/chat_message_list.dart:101:62 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/chat/chat_message_list.dart:143:5 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/common/feature_card.dart:13:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/widgets/common/feature_card.dart:15:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/presentation/widgets/common/feature_card.dart:16:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/presentation/widgets/common/feature_card.dart:17:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/presentation/widgets/common/feature_card.dart:18:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/presentation/widgets/common/feature_card.dart:23:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/common/feature_card.dart:38:28 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/common/feature_card.dart:51:11 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/presentation/widgets/common/feature_card.dart:61:11 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/presentation/widgets/common/feature_card.dart:65:62 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/common/main_layout.dart:6:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/widgets/common/main_layout.dart:13:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/widgets/common/main_layout.dart:13:46 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/presentation/widgets/common/main_layout.dart:16:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/common/main_layout.dart:28:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/widgets/common/main_layout.dart:31:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/common/main_layout.dart:33:33 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/common/main_layout.dart:43:78 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/common/main_layout.dart:73:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/widgets/common/main_layout.dart:76:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/common/main_layout.dart:78:33 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/common/main_layout.dart:118:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/widgets/common/main_layout.dart:121:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/common/main_layout.dart:123:33 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/common/main_layout.dart:134:30 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/widgets/common/main_layout.dart:148:53 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/common/main_layout.dart:236:43 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/common/responsive_card.dart:12:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/widgets/common/responsive_card.dart:14:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/presentation/widgets/media/media_gallery.dart:15:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_gallery.dart:32:19 - To-do comment doesn't follow the Flutter style. Try following the Flutter style for to-do comments. - flutter_style_todos
+   info - lib/presentation/widgets/media/media_gallery.dart:61:49 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_gallery.dart:73:60 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/media/media_gallery.dart:79:62 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/media/media_gallery.dart:90:62 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/media/media_generation_form.dart:29:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_generation_form.dart:53:31 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_generation_form.dart:89:30 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_generation_form.dart:121:36 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_generation_form.dart:140:34 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_generation_form.dart:168:34 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_generation_form.dart:200:5 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_generation_form.dart:223:41 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_generation_form.dart:230:37 - Statement should be on a separate line. Try moving the statement to a new line. - always_put_control_body_on_new_line
+   info - lib/presentation/widgets/media/media_generation_form.dart:244:5 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_generation_form.dart:274:33 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_generation_form.dart:312:25 - Statement should be on a separate line. Try moving the statement to a new line. - always_put_control_body_on_new_line
+   info - lib/presentation/widgets/media/media_item_card.dart:12:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/widgets/media/media_item_card.dart:14:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/presentation/widgets/media/media_item_card.dart:18:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_item_card.dart:36:51 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_item_card.dart:40:46 - 'surfaceVariant' is deprecated and shouldn't be used. Use surfaceContainerHighest instead. This feature was deprecated after v3.18.0-0.1.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/media/media_item_card.dart:58:44 - Statement should be on a separate line. Try moving the statement to a new line. - always_put_control_body_on_new_line
+   info - lib/presentation/widgets/media/media_item_card.dart:61:56 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_item_card.dart:75:79 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_item_card.dart:101:55 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_item_card.dart:107:53 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_item_card.dart:129:48 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_item_card.dart:160:64 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/media/media_item_card.dart:169:52 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/media/media_item_card.dart:292:5 - To-do comment doesn't follow the Flutter style. Try following the Flutter style for to-do comments. - flutter_style_todos
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:3:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:10:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:12:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:13:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:14:19 - Required named parameters should be before optional named parameters. Try moving the required named parameter to be before any optional named parameters. - always_put_required_named_parameters_first
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:18:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:26:35 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:40:33 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:54:53 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:66:20 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:85:17 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:101:24 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:108:27 - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation. - prefer_const_constructors
+   info - lib/presentation/widgets/responsive/responsive_navigation.dart:133:9 - Constructor declarations should be before non-constructor declarations. Try moving the constructor declaration before all other members. - sort_constructors_first
+   info - lib/presentation/widgets/settings/ai_settings.dart:12:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/ai_settings.dart:25:39 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/ai_settings.dart:71:37 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/ai_settings.dart:88:74 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/ai_settings.dart:113:60 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/settings/ai_settings.dart:119:16 - The value of the argument is redundant because it matches the default value. Try removing the argument. - avoid_redundant_argument_values
+   info - lib/presentation/widgets/settings/ai_settings.dart:145:72 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/ai_settings.dart:170:60 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/settings/ai_settings.dart:202:72 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/ai_settings.dart:220:66 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/settings/general_settings.dart:12:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/general_settings.dart:25:39 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/general_settings.dart:74:48 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/general_settings.dart:91:76 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/general_settings.dart:109:66 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - lib/presentation/widgets/settings/general_settings.dart:126:52 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/general_settings.dart:168:5 - To-do comment doesn't follow the Flutter style. Try following the Flutter style for to-do comments. - flutter_style_todos
+   info - lib/presentation/widgets/settings/general_settings.dart:177:5 - To-do comment doesn't follow the Flutter style. Try following the Flutter style for to-do comments. - flutter_style_todos
+   info - lib/presentation/widgets/settings/general_settings.dart:201:15 - To-do comment doesn't follow the Flutter style. Try following the Flutter style for to-do comments. - flutter_style_todos
+   info - lib/presentation/widgets/settings/theme_settings.dart:12:38 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/theme_settings.dart:25:39 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/theme_settings.dart:40:74 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - lib/presentation/widgets/settings/theme_settings.dart:78:71 - Unnecessary use of a block function body. Try using an expression function body. - prefer_expression_function_bodies
+   info - pubspec.yaml:15:3 - Dependencies not sorted alphabetically. Try sorting the dependencies alphabetically (A to Z). - sort_pub_dependencies
+   info - pubspec.yaml:68:3 - Dependencies not sorted alphabetically. Try sorting the dependencies alphabetically (A to Z). - sort_pub_dependencies
+   info - test/widget_test.dart:5:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - test/widget_test.dart:6:1 - Sort directive sections alphabetically. Try sorting the directives. - directives_ordering
+   info - test/widget_test.dart:30:11 - Unnecessary type annotation on a local variable. Try removing the type annotation. - omit_local_variable_types
+   info - test/widget_test.dart:41:11 - Unnecessary type annotation on a local variable. Try removing the type annotation. - omit_local_variable_types
+
+374 issues found.
