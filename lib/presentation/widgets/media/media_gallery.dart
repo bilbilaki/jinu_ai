@@ -100,10 +100,10 @@ class MediaGallery extends StatelessWidget {
 
   Widget _buildMediaGrid(BuildContext context, List<MediaContent> mediaList) {
     final crossAxisCount = ResponsiveUtils.responsiveValue(
-      mobile: 1,
-      tablet: 2,
-      desktop: 3,
-    );
+      mobile: 1.0,
+      tablet: 2.0,
+      desktop: 3.0,
+    ).round();
 
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

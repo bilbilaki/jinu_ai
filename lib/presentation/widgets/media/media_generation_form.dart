@@ -100,10 +100,10 @@ class _MediaGenerationFormState extends State<MediaGenerationForm> {
         TextField(
           controller: _promptController,
           maxLines: ResponsiveUtils.responsiveValue(
-            mobile: 4,
-            tablet: 6,
-            desktop: 8,
-          ),
+            mobile: 4.0,
+            tablet: 6.0,
+            desktop: 8.0,
+          ).round(),
           decoration: InputDecoration(
             hintText: _selectedType == MediaContentType.image
                 ? 'Describe the image you want to generate...'

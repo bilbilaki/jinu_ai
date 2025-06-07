@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 
 import '../../../core/utils/responsive_helper.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../domain/entities/media_content.dart';
 import '../../blocs/media/media_bloc.dart';
 import '../../widgets/common/responsive_card.dart';
 import '../../widgets/media/media_generation_form.dart';

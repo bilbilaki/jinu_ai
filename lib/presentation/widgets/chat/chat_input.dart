@@ -31,11 +31,7 @@ class _ChatInputState extends State<ChatInput> {
         final isLoading = state.isLoading || state.isStreaming;
         
         return Container(
-          padding: ResponsiveUtils.responsivePadding(
-            mobile: const EdgeInsets.all(AppConstants.spacingM),
-            tablet: const EdgeInsets.all(AppConstants.spacingL),
-            desktop: const EdgeInsets.all(AppConstants.spacingL),
-          ),
+          padding: ResponsiveUtils.responsivePadding(),
           child: Row(
             children: [
               Expanded(
@@ -55,10 +51,10 @@ class _ChatInputState extends State<ChatInput> {
                           focusNode: _focusNode,
                           enabled: !isLoading,
                           maxLines: ResponsiveUtils.responsiveValue(
-                            mobile: 4,
-                            tablet: 6,
-                            desktop: 8,
-                          ),
+                            mobile: 4.0,
+                            tablet: 6.0,
+                            desktop: 8.0,
+                          ).round(),
                           minLines: 1,
                           decoration: InputDecoration(
                             hintText: isLoading 

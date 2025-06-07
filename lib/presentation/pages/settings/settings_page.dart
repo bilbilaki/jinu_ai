@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/utils/responsive_helper.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../blocs/theme/theme_cubit.dart';
 import '../../widgets/common/responsive_card.dart';
 import '../../widgets/settings/theme_settings.dart';
 import '../../widgets/settings/ai_settings.dart';

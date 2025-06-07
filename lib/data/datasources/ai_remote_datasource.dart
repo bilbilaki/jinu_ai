@@ -99,7 +99,7 @@ class AIRemoteDataSourceImpl implements AIRemoteDataSource {
     final response = await client.get(
       Uri.parse('$baseUrl/models'),
       headers: {
-        'Authorization': 'Bearer ${/* API_KEY */}',
+        'Authorization': 'Bearer ', // TODO: Add API key parameter
       },
     );
 
@@ -118,7 +118,7 @@ class AIRemoteDataSourceImpl implements AIRemoteDataSource {
     final response = await client.get(
       Uri.parse('$baseUrl/models/$modelId'),
       headers: {
-        'Authorization': 'Bearer ${/* API_KEY */}',
+        'Authorization': 'Bearer ', // TODO: Add API key parameter
       },
     );
 

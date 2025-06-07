@@ -6,7 +6,6 @@ import '../../../core/utils/responsive_helper.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/navigation/app_router.dart';
 import '../../blocs/navigation/navigation_cubit.dart';
-import '../responsive/responsive_navigation.dart';
 
 class MainLayout extends StatelessWidget {
   final Widget child;
